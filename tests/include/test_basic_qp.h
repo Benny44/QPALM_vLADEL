@@ -1,0 +1,1 @@
+void suite_basic_qp(void);

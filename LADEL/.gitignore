@@ -1,0 +1,6 @@
+.vscode
+build
+*.mexa64
+*.m~
+*.mat
+private
