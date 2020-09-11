@@ -86,3 +86,4 @@ done
 
 
 # Clean up any externals
+cp private/LICENSE ../QPALM_ladel/
