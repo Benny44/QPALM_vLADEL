@@ -1,4 +1,0 @@
-[submodule "test/include/Minunit"]
-	path = test/include/Minunit
-	url = https://github.com/Benny44/Minunit.git
-	branch = master

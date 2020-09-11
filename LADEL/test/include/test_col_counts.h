@@ -1,1 +1,0 @@
-void suite_col_counts(void);
