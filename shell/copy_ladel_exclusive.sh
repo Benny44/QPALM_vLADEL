@@ -18,6 +18,7 @@ rsync -a . ../QPALM_ladel \
     --exclude build/ \
     --exclude suitesparse/ \
     --exclude cmakeSuitesparse/ \
+    --exclude LADEL/ \
     --exclude docs/ \
 
 # Remove all the cholmod code in C
