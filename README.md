@@ -3,12 +3,12 @@
 
 
 
-[![Coverage Status](https://coveralls.io/repos/github/Benny44/QPALM/badge.svg?branch=master)](https://coveralls.io/github/Benny44/QPALM?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/Benny44/QPALM_vLADEL/badge.svg?branch=master)](https://coveralls.io/github/Benny44/QPALM?branch=master)
 
 Platform | CI Status
 ---------|:---------
-Linux    | [![Linux Build Status](https://travis-ci.org/Benny44/QPALM.svg?env=BADGE=linux&branch=master)](https://travis-ci.com/Benny44/QPALM)
-OSX      | [![OSX Build Status](https://travis-ci.org/Benny44/QPALM.svg?env=BADGE=osx&branch=master)](https://travis-ci.com/Benny44/QPALM)
+Linux    | [![Linux Build Status](https://travis-ci.org/Benny44/QPALM_vLADEL.svg?env=BADGE=linux&branch=master)](https://travis-ci.com/Benny44/QPALM)
+OSX      | [![OSX Build Status](https://travis-ci.org/Benny44/QPALM_vLADEL.svg?env=BADGE=osx&branch=master)](https://travis-ci.com/Benny44/QPALM)
 
 A proximal augmented Lagrangian method for (possibly **nonconvex**) QPs using semismooth Newton direction and exact line search.
 
@@ -77,7 +77,7 @@ You can now find the the documentation [online](https://benny44.github.io/QPALM/
 
 ## Tests
 
-The QPALM library is tested extensively. The tests currently have [![Coverage Status](https://coveralls.io/repos/github/Benny44/QPALM/badge.svg?branch=master)](https://coveralls.io/github/Benny44/QPALM?branch=master). To build the debug version and run the automated tests yourself, check out the custom compilation section above.
+The QPALM library is tested extensively. The tests currently have [![Coverage Status](https://coveralls.io/repos/github/Benny44/QPALM_vLADEL/badge.svg?branch=master)](https://coveralls.io/github/Benny44/QPALM?branch=master). To build the debug version and run the automated tests yourself, check out the custom compilation section above.
 
 ## Benchmarks
 
