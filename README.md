@@ -73,7 +73,7 @@ Basic demos are available for the different ways to call the solver:
 
 ## Documentation
 
-You can now find the the documentation [online](https://benny44.github.io/QPALM/).
+You can now find the the documentation [online](https://benny44.github.io/QPALM_vLADEL/).
 
 ## Tests
 

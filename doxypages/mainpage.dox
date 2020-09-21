@@ -12,7 +12,7 @@
  * @f}
  * 
  * \section install_sec Installation
- * See the instructions on the <a href=https://github.com/Benny44/QPALM>Readme</a>.
+ * See the instructions on the <a href=https://github.com/Benny44/QPALM_vLADEL>Readme</a>.
  * 
  * \section example Using QPALM (in matlab)
  * 
@@ -68,5 +68,5 @@
  * 
  * \section license License
  * 
- * GPL 3.0
+ * * LGPL-3.0
  */
