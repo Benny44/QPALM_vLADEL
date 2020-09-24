@@ -74,7 +74,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Interface and wrapper to matrix/factorization (ladel/cholmod) functions.  
+<p>Interface and wrapper to matrix/factorization (ladel) functions.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="lin__alg_8h_source.html">lin_alg.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="solver__interface_8h_source.html">solver_interface.h</a>&quot;</code><br />
@@ -127,9 +127,9 @@ Functions</h2></td></tr>
 <tr class="separator:a03ad73d0e41054e90232d141e73474ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p class="">Interface and wrapper to matrix/factorization (ladel/cholmod) functions. </p>
+<div class="textblock"><p class="">Interface and wrapper to matrix/factorization (ladel) functions. </p>
 <dl class="section author"><dt>Author</dt><dd>Ben Hermans</dd></dl>
-<p>This file includes all calls to cholmod/ladel functions apart from scaling in <a class="el" href="scaling_8c.html" title="Problem data scaling during setup.">scaling.c</a> and memory allocation/deallocation in the main functions in <a class="el" href="qpalm_8c.html" title="QPALM main solver API.">qpalm.c</a>. It includes all matrix operations, such as matrix vector products, row- and columnwise norms, cholesky factorizations, factorization updates and solving the linear system. Finally, all the settings relevant to cholmod (and suitesparse) are included in this file as well. </p>
+<p>This file includes all calls to ladel functions apart from scaling in <a class="el" href="scaling_8c.html" title="Problem data scaling during setup.">scaling.c</a> and memory allocation/deallocation in the main functions in <a class="el" href="qpalm_8c.html" title="QPALM main solver API.">qpalm.c</a>. It includes all matrix operations, such as matrix vector products, row- and columnwise norms, cholesky factorizations, factorization updates and solving the linear system. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="aca80eaf7b897030273f1a6820b7e6d38"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aca80eaf7b897030273f1a6820b7e6d38">&#9670;&nbsp;</a></span>kkt_solve()</h2>

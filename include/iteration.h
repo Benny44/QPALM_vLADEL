@@ -41,7 +41,7 @@ void initialize_sigma(  QPALMWorkspace  *work,
  * 
  * Constraints that are active are penalized in proportion to their constraint violation.
  * If the number of changed penalty parameters is low, and the proximal penalty need not be further updated,
- * then the cholmod_factor LD is updated using a low-rank update based on the changed penalty factors.
+ * then the factor LD is updated using a low-rank update based on the changed penalty factors.
  * @param work  Workspace
  * @param c     Linear systems solver environment
  */
