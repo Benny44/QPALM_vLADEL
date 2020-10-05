@@ -11,9 +11,16 @@ else
     Cint
 end
 
+const Cc_uint = if Sys.WORD_SIZE == 64
+    Culong
+else
+    Cuint
+end
+
+
 struct Carray_element
     x::Cdouble
-    i::Cc_int
+    i::Cc_uint
 end
 
 struct ladel_sparse_matrix
@@ -37,8 +44,8 @@ else
 end
 
 struct Data
-    n::Cc_int
-    m::Cc_int
+    n::Cc_uint
+    m::Cc_uint
     Q::sparse_matrix_ptr
     A::sparse_matrix_ptr
     q::Ptr{Cdouble}
