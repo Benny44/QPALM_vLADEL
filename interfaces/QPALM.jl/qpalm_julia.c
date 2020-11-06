@@ -1,4 +1,4 @@
-#ifdef USE_LADEL
+
 #include "qpalm.h"
 
 QPALMData *qpalm_julia_set_data(c_int           n, 
@@ -32,4 +32,3 @@ QPALMData *qpalm_julia_set_data(c_int           n,
   } 
   return data;
 }
-#endif /* USE_LADEL */
