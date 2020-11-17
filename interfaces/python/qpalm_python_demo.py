@@ -3,8 +3,9 @@ import numpy as np
 import scipy as sc
 import scipy.sparse as sp
 
-
+print("Starting demo\n")
 solver = qp.Qpalm()
+print("After constructor\n")
 solver._settings.contents.eps_abs = 1e-10
 solver._settings.contents.eps_rel = 1e-10
 
@@ -22,9 +23,14 @@ col = np.array([0, 0, 1, 1, 2, 2])
 data = np.array([1, 1, 1, 1, 1, 1])
 A = sp.csc_matrix((data, (row, col)), shape=(4, 3))
 
+print("Before set data\n")
 solver.set_data(Q=Q, A=A, q=q, bmin=bmin, bmax=bmax)
+print("After set data\n")
+
 
 solver._solve()
+print("After solve\n")
+
 sol_x = solver._work.contents.solution.contents.x
 tol = 1e-5
 
