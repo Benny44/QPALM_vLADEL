@@ -76,4 +76,6 @@ assert(abs(sol_x[0] - 0) < tol)
 assert(abs(sol_x[1] - 0) < tol)
 assert(abs(sol_x[2] - (0.5)) < tol)
 
+print("All tests succeeded\n")
+
 
