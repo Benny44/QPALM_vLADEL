@@ -1,6 +1,13 @@
+print("Before importing QPALM\n")
 import qpalm as qp
+print("Before importing NP\n")
+
 import numpy as np
+print("Before importing SP\n")
+
 import scipy as sc
+print("Before importing SC\n")
+
 import scipy.sparse as sp
 
 print("Starting demo\n")
