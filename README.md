@@ -112,7 +112,7 @@ If you use QPALM in your research, please cite the following paper
 
 ## License
 
-QPALM is licensed under GPL v3.0. Some modules are used in this software: 
+QPALM is licensed under LGPL v3.0. Some modules are used in this software: 
 * LADEL: authored by Ben Hermans and licensed under [LGPL-v3](https://github.com/Benny44/LADEL/blob/master/LICENSE).
 
 * LOBPCG: the version of LOBPCG used here was written by Ben Hermans and licensed under the GNU Lesser General Public License v3.0, see [LOBPCG/LICENSE](https://github.com/Benny44/LOBPCG/blob/master/LICENSE).

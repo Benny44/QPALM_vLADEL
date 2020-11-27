@@ -165,10 +165,11 @@ sed -i 's#Benny44/QPALM#Benny44/QPALM_vLADEL#' README.md
 sed -i 's#io/QPALM#io/QPALM_vLADEL#' README.md
 sed -i 's#.txt). -->#.txt).#' README.md
 sed -i 's/<!-- ## Documentation/## Documentation/' README.md
+sed -i 's/QPALM is licensed under GPL/QPALM is licensed under LGPL/' README.md
 
 #Documentation
 sed -i 's#github.com/Benny44/QPALM#github.com/Benny44/QPALM_vLADEL#' doxypages/mainpage.dox
-sed -i 's# * GPL 3.0# * LGPL-3.0#' doxypages/mainpage.dox
+sed -i 's# \* GPL 3.0# \* LGPL-3.0#' doxypages/mainpage.dox
 
 
 sed -i 's#ladel/cholmod#ladel#' include/solver_interface.h
