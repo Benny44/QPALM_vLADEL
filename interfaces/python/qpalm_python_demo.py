@@ -1,18 +1,10 @@
-print("Before importing QPALM\n")
 import qpalm as qp
-print("Before importing NP\n")
-
 import numpy as np
-print("Before importing SP\n")
-
 import scipy as sc
-print("Before importing SC\n")
-
 import scipy.sparse as sp
 
-print("Starting demo\n")
+
 solver = qp.Qpalm()
-print("After constructor\n")
 solver._settings.contents.eps_abs = 1e-10
 solver._settings.contents.eps_rel = 1e-10
 
@@ -30,14 +22,9 @@ col = np.array([0, 0, 1, 1, 2, 2])
 data = np.array([1, 1, 1, 1, 1, 1])
 A = sp.csc_matrix((data, (row, col)), shape=(4, 3))
 
-print("Before set data\n")
 solver.set_data(Q=Q, A=A, q=q, bmin=bmin, bmax=bmax)
-print("After set data\n")
-
 
 solver._solve()
-print("After solve\n")
-
 sol_x = solver._work.contents.solution.contents.x
 tol = 1e-5
 
@@ -88,7 +75,5 @@ sol_x = solver._work.contents.solution.contents.x
 assert(abs(sol_x[0] - 0) < tol)
 assert(abs(sol_x[1] - 0) < tol)
 assert(abs(sol_x[2] - (0.5)) < tol)
-
-print("All tests succeeded\n")
 
 

@@ -67,27 +67,21 @@ static void* c_realloc(void *ptr, size_t size) {
 // Define memory allocation for python. Note that in Python 2 memory manager
 // Calloc is not implemented
     #   include <Python.h>
-    // #   define c_malloc(...) {PyGILState_STATE gstate; gstate = PyGILState_Ensure(); void *p = PyMem_Malloc(__VA_ARGS__); PyGILState_Release(gstate); return p;}
-static void * c_malloc(size_t size) {PyGILState_STATE gstate; gstate = PyGILState_Ensure(); void *p = PyMem_Malloc(size); PyGILState_Release(gstate); return p;}
+    #   define c_malloc PyMem_Malloc
     #   if PY_MAJOR_VERSION >= 3
-    // #    define c_calloc(...) {PyGILState_STATE gstate; gstate = PyGILState_Ensure(); PyMem_Calloc(__VA_ARGS__); PyGILState_Release(gstate);}
-static void * c_calloc(size_t num, size_t size) {PyGILState_STATE gstate; gstate = PyGILState_Ensure(); void *p = PyMem_Calloc(num, size); PyGILState_Release(gstate); return p;}
+    #    define c_calloc PyMem_Calloc
     #   else  /* if PY_MAJOR_VERSION >= 3 */
 static void* c_calloc(size_t num, size_t size) {
-  PyGILState_STATE gstate; gstate = PyGILState_Ensure(); 
   void *m = PyMem_Malloc(num * size);
 
   memset(m, 0, num * size);
-  PyGILState_Release(gstate);
   return m;
 }
 
     #   endif /* if PY_MAJOR_VERSION >= 3 */
 
-    // #   define c_free(...) {PyGILState_STATE gstate; gstate = PyGILState_Ensure(); PyMem_Free(__VA_ARGS__); PyGILState_Release(gstate);}
-static void * c_free(void *p) {PyGILState_STATE gstate; gstate = PyGILState_Ensure(); PyMem_Free(p); PyGILState_Release(gstate); return NULL;}
-    // #   define c_realloc(...) {PyGILState_STATE gstate; gstate = PyGILState_Ensure(); PyMem_Realloc(__VA_ARGS__); PyGILState_Release(gstate);}
-static void * c_realloc(void *p, size_t size) {PyGILState_STATE gstate; gstate = PyGILState_Ensure(); p = PyMem_Realloc(p, size); PyGILState_Release(gstate); return p;}
+    #   define c_free PyMem_Free
+    #   define c_realloc PyMem_Realloc
 #  else  /* if not MATLAB of Python */
     #   define c_malloc malloc    /**< custom malloc */
     #   define c_calloc calloc    /**< custom calloc */
