@@ -51,7 +51,7 @@ int main() {
   c = &common;
   solver_sparse *A, *Q;
   A = ladel_sparse_alloc(M, N, ANZMAX, UNSYMMETRIC, TRUE, FALSE);
-  Q = ladel_sparse_alloc(N, N, QNZMAX, UPPER, TRUE, FALSE)
+  Q = ladel_sparse_alloc(N, N, QNZMAX, UPPER, TRUE, FALSE);
 
   c_float *Ax;
   c_int *Ai, *Ap;
@@ -77,7 +77,7 @@ int main() {
   qpalm_set_default_settings(settings);
 
   // Setup workspace
-  work = qpalm_setup(data, settings, c);
+  work = qpalm_setup(data, settings);
 
   // Solve Problem
   qpalm_solve(work);

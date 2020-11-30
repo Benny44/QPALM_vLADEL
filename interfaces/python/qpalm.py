@@ -210,7 +210,7 @@ class Qpalm:
         """
         self.python_interface.qpalm_cleanup(self._work)
         self.python_interface.python_free_settings(self._settings)
-        self.python_interface.python_free_data(self._data)
+        # self.python_interface.python_free_data(self._data)
         
     def set_data(self, Q, A, q, bmin, bmax):
         """
