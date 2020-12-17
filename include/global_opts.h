@@ -105,7 +105,7 @@ static void* c_calloc(size_t num, size_t size) {
 
 #  elif defined PYTHON
 #   include <Python.h>
-#   define c_print(...) {PyGILState_STATE gstate; gstate = PyGILState_Ensure(); PySys_WriteStdout(__VA_ARGS__); PyGILState_Release(gstate);}
+#   define c_print(...) {PyGILState_STATE gstate; int py_check = PyGILState_Check(); if (!py_check) {gstate = PyGILState_Ensure();} PySys_WriteStdout(__VA_ARGS__); if (!py_check) {PyGILState_Release(gstate);}}
 #  elif defined R_LANG
 #   include <R_ext/Print.h>
 #   define c_print Rprintf
