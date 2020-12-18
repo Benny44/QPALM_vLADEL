@@ -277,11 +277,16 @@ void qpalm_warm_start(QPALMWorkspace *work, c_float *x_warm_start, c_float *y_wa
     
     work->gamma = work->settings->gamma_init;
 
-    // If we have previously solved the problem, then just count the warm start as the setup time
-    #ifdef PROFILING
-    if (work->info->status_val != QPALM_UNSOLVED) work->info->setup_time = 0; 
+    // If we have previously solved the problem, then reset the setup time
+    if (work->info->status_val != QPALM_UNSOLVED) 
+    {
+      #ifdef PROFILING
+      work->info->setup_time = 0;
+      #endif /* ifdef PROFILING */
+      work->info->status_val = QPALM_UNSOLVED;
+    }
     qpalm_tic(work->timer); // Start timer
-    #endif /* ifdef PROFILING */
+    
 
     size_t n = work->data->n;
     size_t m = work->data->m;
@@ -441,7 +446,8 @@ void qpalm_solve(QPALMWorkspace *work) {
       #endif
 
       return; 
-    } else if (check_subproblem_termination(work) || (no_change_in_active_constraints == 3)) {
+    } 
+    else if (check_subproblem_termination(work) || (no_change_in_active_constraints == 3)) {
       no_change_in_active_constraints = 0;
 
       if (iter_out > 0 && work->info->pri_res_norm > work->eps_pri) {
@@ -564,12 +570,12 @@ void qpalm_solve(QPALMWorkspace *work) {
       #ifdef PRINTING
       if (work->settings->verbose && mod(iter, work->settings->print_iter) == 0) {
         c_print("%4ld | ---------------------------------------------------\n", iter);
-        // c_print("Sigma_changed: %4ld, Dua2_res: %4e\n", work->nb_sigma_changed, work->info->dua2_res_norm);
       }
       #endif
       
     
-    } else if (iter == prev_iter + work->settings->inner_max_iter){ 
+    } 
+    else if (iter == prev_iter + work->settings->inner_max_iter){ 
         no_change_in_active_constraints = 0;     
         if (iter_out > 0 && work->info->pri_res_norm > work->eps_pri) {
         update_sigma(work, c);
@@ -584,7 +590,8 @@ void qpalm_solve(QPALMWorkspace *work) {
       iter_out++;
       prev_iter = iter;
 
-    } else {
+    } 
+    else {
 
       if (work->solver->nb_enter+work->solver->nb_leave) no_change_in_active_constraints = 0;
       else no_change_in_active_constraints++;
@@ -654,6 +661,16 @@ void qpalm_solve(QPALMWorkspace *work) {
 
 
 void qpalm_update_settings(QPALMWorkspace* work, const QPALMSettings *settings) {
+  // If we have previously solved the problem, then reset the setup time
+  if (work->info->status_val != QPALM_UNSOLVED) 
+  {
+    #ifdef PROFILING
+    work->info->setup_time = 0;
+    #endif /* ifdef PROFILING */
+    work->info->status_val = QPALM_UNSOLVED;
+  }
+  qpalm_tic(work->timer); // Start timer
+  
   // Validate settings
   if (!validate_settings(settings)) {
     # ifdef PRINTING
@@ -703,9 +720,22 @@ void qpalm_update_settings(QPALMWorkspace* work, const QPALMSettings *settings) 
   c_free(work->settings);
   work->settings = copy_settings(settings);
   work->sqrt_delta = c_sqrt(work->settings->delta);
+  # ifdef PROFILING
+  work->info->setup_time += qpalm_toc(work->timer);
+  # endif /* ifdef PROFILING */
 }
 
 void qpalm_update_bounds(QPALMWorkspace *work, const c_float *bmin, const c_float *bmax) {
+  // If we have previously solved the problem, then reset the setup time
+  if (work->info->status_val != QPALM_UNSOLVED) 
+  {
+    #ifdef PROFILING
+    work->info->setup_time = 0;
+    #endif /* ifdef PROFILING */
+    work->info->status_val = QPALM_UNSOLVED;
+  }
+  qpalm_tic(work->timer); // Start timer
+
   // Validate bounds
   size_t j;
   size_t m = work->data->m;
@@ -737,9 +767,22 @@ void qpalm_update_bounds(QPALMWorkspace *work, const c_float *bmin, const c_floa
       vec_ew_prod(work->scaling->E, work->data->bmax, work->data->bmax, m);
     } 
   }
+  # ifdef PROFILING
+  work->info->setup_time += qpalm_toc(work->timer);
+  # endif /* ifdef PROFILING */
 }
 
 void qpalm_update_q(QPALMWorkspace *work, const c_float *q) {
+  // If we have previously solved the problem, then reset the setup time
+  if (work->info->status_val != QPALM_UNSOLVED) 
+  {
+    #ifdef PROFILING
+    work->info->setup_time = 0;
+    #endif /* ifdef PROFILING */
+    work->info->status_val = QPALM_UNSOLVED;
+  }
+  qpalm_tic(work->timer); // Start timer
+
   size_t n = work->data->n;
   prea_vec_copy(q, work->data->q, n);    
   if (work->settings->scaling) {
@@ -773,6 +816,52 @@ void qpalm_update_q(QPALMWorkspace *work, const c_float *q) {
       vec_add_scaled(work->Qx, work->x, work->Qx, 1/work->gamma, work->data->n);    
     }
   }
+  # ifdef PROFILING
+  work->info->setup_time += qpalm_toc(work->timer);
+  # endif /* ifdef PROFILING */
+}
+
+void qpalm_update_Q_A(QPALMWorkspace *work, const c_float *Qx, const c_float *Ax)
+{
+  // If we have previously solved the problem, then reset the setup time
+  if (work->info->status_val != QPALM_UNSOLVED) 
+  {
+    #ifdef PROFILING
+    work->info->setup_time = 0;
+    #endif /* ifdef PROFILING */
+    work->info->status_val = QPALM_UNSOLVED;
+  }
+  qpalm_tic(work->timer); // Start timer
+
+  ladel_sparse_matrix *Q = work->data->Q, *A = work->data->A;
+  prea_vec_copy(Qx, Q->x, Q->nzmax);
+  prea_vec_copy(Ax, A->x, A->nzmax);
+  // Perform scaling
+  if (work->settings->scaling) {
+    scale_data(work);
+  }
+
+  solver_common common, *c;
+  c = &common;
+  if (work->solver->factorization_method == FACTORIZE_KKT)
+  {
+    if (work->solver->At) ladel_sparse_free(At); 
+    c->array_int_ncol1 = work->index_L; /* Avoid allocating full workspace */
+    work->solver->At = ladel_transpose(work->data->A, TRUE, c);
+    c->array_int_ncol1 = NULL;
+  }
+
+  if (work->settings->nonconvex) {
+    set_settings_nonconvex(work, c);
+  }
+
+  # ifdef PROFILING
+  work->info->setup_time += qpalm_toc(work->timer);
+  # endif /* ifdef PROFILING */
+}
+  
+  
+  
 }
 
 

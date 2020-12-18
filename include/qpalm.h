@@ -128,6 +128,21 @@ void qpalm_update_bounds(QPALMWorkspace *work,
 void qpalm_update_q(QPALMWorkspace  *work, 
                     const c_float   *q);
 
+/**
+ * Update the matrix entries of Q and A.
+ * 
+ * This function does not allow a change in the patterns of Q and A. For this, the
+ * user will need to recall qpalm_setup.
+ * 
+ * @param work Workspace
+ * @param Qx Elements of Q (upper diagonal part)
+ * @param Ax Elements of A
+ */
+void qpalm_update_Q_A(QPALMWorkspace *work, 
+                      const c_float  *Qx, 
+                      const c_float  *Ax);
+
+
 
 /**
  * Cleanup the workspace by deallocating memory.
