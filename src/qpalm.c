@@ -869,11 +869,6 @@ void qpalm_update_Q_A(QPALMWorkspace *work, const c_float *Qx, const c_float *Ax
   work->info->setup_time += qpalm_toc(work->timer);
   # endif /* ifdef PROFILING */
 }
-  
-  
-  
-}
-
 
 void qpalm_cleanup(QPALMWorkspace *work) {
   
