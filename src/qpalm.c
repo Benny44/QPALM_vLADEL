@@ -285,7 +285,9 @@ void qpalm_warm_start(QPALMWorkspace *work, c_float *x_warm_start, c_float *y_wa
       #endif /* ifdef PROFILING */
       work->info->status_val = QPALM_UNSOLVED;
     }
-    qpalm_tic(work->timer); // Start timer
+    #ifdef PROFILING
+    qpalm_tic(work->timer);
+    #endif
     
 
     size_t n = work->data->n;
@@ -669,7 +671,9 @@ void qpalm_update_settings(QPALMWorkspace* work, const QPALMSettings *settings) 
     #endif /* ifdef PROFILING */
     work->info->status_val = QPALM_UNSOLVED;
   }
+  #ifdef PROFILING
   qpalm_tic(work->timer); // Start timer
+  #endif /* ifdef PROFILING */
   
   // Validate settings
   if (!validate_settings(settings)) {
@@ -734,7 +738,9 @@ void qpalm_update_bounds(QPALMWorkspace *work, const c_float *bmin, const c_floa
     #endif /* ifdef PROFILING */
     work->info->status_val = QPALM_UNSOLVED;
   }
+  #ifdef PROFILING
   qpalm_tic(work->timer); // Start timer
+  #endif /* ifdef PROFILING */
 
   // Validate bounds
   size_t j;
@@ -781,7 +787,9 @@ void qpalm_update_q(QPALMWorkspace *work, const c_float *q) {
     #endif /* ifdef PROFILING */
     work->info->status_val = QPALM_UNSOLVED;
   }
+  #ifdef PROFILING
   qpalm_tic(work->timer); // Start timer
+  #endif /* ifdef PROFILING */
 
   size_t n = work->data->n;
   prea_vec_copy(q, work->data->q, n);    
@@ -831,7 +839,9 @@ void qpalm_update_Q_A(QPALMWorkspace *work, const c_float *Qx, const c_float *Ax
     #endif /* ifdef PROFILING */
     work->info->status_val = QPALM_UNSOLVED;
   }
+  #ifdef PROFILING
   qpalm_tic(work->timer); // Start timer
+  #endif /* ifdef PROFILING */
 
   ladel_sparse_matrix *Q = work->data->Q, *A = work->data->A;
   prea_vec_copy(Qx, Q->x, Q->nzmax);
@@ -845,7 +855,7 @@ void qpalm_update_Q_A(QPALMWorkspace *work, const c_float *Qx, const c_float *Ax
   c = &common;
   if (work->solver->factorization_method == FACTORIZE_KKT)
   {
-    if (work->solver->At) ladel_sparse_free(At); 
+    if (work->solver->At) ladel_sparse_free(work->solver->At); 
     c->array_int_ncol1 = work->index_L; /* Avoid allocating full workspace */
     work->solver->At = ladel_transpose(work->data->A, TRUE, c);
     c->array_int_ncol1 = NULL;
