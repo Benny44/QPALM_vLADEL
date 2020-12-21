@@ -72,8 +72,8 @@ QPALMWorkspace* qpalm_setup(const QPALMData     *data,
  * @param y_warm_start Warm start for the dual variables
  */
 void qpalm_warm_start(QPALMWorkspace *work, 
-                      c_float        *x_warm_start, 
-                      c_float        *y_warm_start);
+                      const c_float  *x_warm_start, 
+                      const c_float  *y_warm_start);
 
 /**
  * Solve the quadratic program.

@@ -273,7 +273,7 @@ QPALMWorkspace* qpalm_setup(const QPALMData *data, const QPALMSettings *settings
 }
 
 
-void qpalm_warm_start(QPALMWorkspace *work, c_float *x_warm_start, c_float *y_warm_start) {
+void qpalm_warm_start(QPALMWorkspace *work, const c_float *x_warm_start, const c_float *y_warm_start) {
     
     work->gamma = work->settings->gamma_init;
 
