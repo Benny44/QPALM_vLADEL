@@ -115,6 +115,17 @@ MU_TEST(test_update_after_setup) {
     mu_assert_double_eq(work->solution->x[1], 2.3, TOL);
     c_print("work->solution->x[0]: %.16f\n", work->solution->x[0]);
     c_print("work->solution->x[1]: %.16f\n", work->solution->x[1]);
+
+    qpalm_warm_start(work, NULL, NULL);
+
+    // Solve Problem
+    qpalm_solve(work);
+
+    mu_assert_long_eq(work->info->status_val, QPALM_SOLVED);
+    mu_assert_double_eq(work->solution->x[0], 0.7, TOL);
+    mu_assert_double_eq(work->solution->x[1], 2.3, TOL);
+    c_print("work->solution->x[0]: %.16f\n", work->solution->x[0]);
+    c_print("work->solution->x[1]: %.16f\n", work->solution->x[1]);
 }
 
 MU_TEST_SUITE(suite_update_after_setup) {
