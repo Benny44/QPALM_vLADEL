@@ -159,6 +159,12 @@ endif()
 
 add_library(qpalm ${SRC})
 
+install(TARGETS qpalm
+EXPORT  ${PROJECT_NAME}
+LIBRARY       DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+ARCHIVE       DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+RUNTIME       DESTINATION "${CMAKE_INSTALL_BINDIR}")
+
 ############################################################
 #################### Link the libraries ####################
 ############################################################
