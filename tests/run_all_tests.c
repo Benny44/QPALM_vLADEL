@@ -11,6 +11,7 @@
 #include "test_error_handling.h"
 #include "test_ls_qp.h"
 #include "test_medium_qp.h"
+#include "test_casadi_general_unconstrained.h"
 
 
 int main(){
@@ -27,6 +28,7 @@ int main(){
     MU_RUN_SUITE(suite_validation);
     MU_RUN_SUITE(suite_error_handling);
     MU_RUN_SUITE(suite_ls_qp);
+    MU_RUN_SUITE(suite_casadi_general_unconstrained);
     MU_REPORT();
     
     return minunit_fail; /* =0 if all tests passed, >0 otherwise */
