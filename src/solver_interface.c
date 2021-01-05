@@ -50,7 +50,7 @@ void qpalm_set_factorization_method(QPALMWorkspace *work, solver_common *c)
         nnz_schur += (n-Atnz_col_max)*(Atnz_col-(n-Atnz_col_max+1)/2.0);
     }
     if (2*Atnz_col_max > n) nnz_schur += 0.5*Atnz_col_max*(Atnz_col_max-1) - (n-Atnz_col_max)*(Atnz_col_max-(n-Atnz_col_max+1)/2.0);
-    nnz_schur = c_min(nnz_schur, n*(n-1)/2);
+    nnz_schur = c_max(c_min(nnz_schur, n*(n-1)/2), 1);
     /* NB: If nnz(KKT) == nnz(Q+AtA) << n^2, then KKT will perform a bit better due to the 
     ordering. */;
     At = ladel_sparse_free(At);
