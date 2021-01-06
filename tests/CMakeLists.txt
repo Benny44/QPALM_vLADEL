@@ -18,6 +18,7 @@ add_executable(run_all_tests
             src/test_ls_qp.c
             src/test_update_after_setup.c
             src/test_casadi_general_unconstrained.c
+            src/test_casadi_general_convex_sparse.c
             src/test_medium_qp.c)
 
 target_include_directories(run_all_tests 
