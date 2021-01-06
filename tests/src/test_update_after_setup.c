@@ -17,8 +17,8 @@ solver_common common;
 void update_after_setup_suite_setup(void) {
     settings = (QPALMSettings *)c_malloc(sizeof(QPALMSettings));
     qpalm_set_default_settings(settings);
-    settings->eps_abs = 1e-12;
-    settings->eps_rel = 1e-12;
+    settings->eps_abs = 1e-8;
+    settings->eps_rel = 1e-8;
 
     c_float* dummy = c_calloc(M, sizeof(c_float)); dummy[0] = 0; dummy[1] = 0;
     c_int *Ai = c_calloc(ANZMAX, sizeof(c_int)); 
@@ -113,8 +113,22 @@ MU_TEST(test_update_after_setup) {
     mu_assert_long_eq(work->info->status_val, QPALM_SOLVED);
     mu_assert_double_eq(work->solution->x[0], 0.7, TOL);
     mu_assert_double_eq(work->solution->x[1], 2.3, TOL);
-    c_print("work->solution->x[0]: %.16f\n", work->solution->x[0]);
-    c_print("work->solution->x[1]: %.16f\n", work->solution->x[1]);
+    c_print("work->solution->x[0]: %.17f\n", work->solution->x[0]);
+    c_print("work->solution->x[1]: %.17f\n", work->solution->x[1]);
+
+    Qx = w; Ax = w+QNZMAX;
+    Qx[0] = 1.0; Qx[1] = 1.0;
+    Ax[0] = 1; Ax[1] = 1;
+    qpalm_update_Q_A(work, Qx, Ax);
+
+    q = w;
+    q[0] = -0.7; q[1] = -2.3;
+    qpalm_update_q(work, q);
+
+    bmin = w; bmax = w+M;
+    bmin[0] = -QPALM_INFTY; bmin[1] = -QPALM_INFTY;
+    bmax[0] = QPALM_INFTY; bmax[1] = QPALM_INFTY;
+    qpalm_update_bounds(work, bmin, bmax);
 
     qpalm_warm_start(work, NULL, NULL);
 
@@ -124,8 +138,8 @@ MU_TEST(test_update_after_setup) {
     mu_assert_long_eq(work->info->status_val, QPALM_SOLVED);
     mu_assert_double_eq(work->solution->x[0], 0.7, TOL);
     mu_assert_double_eq(work->solution->x[1], 2.3, TOL);
-    c_print("work->solution->x[0]: %.16f\n", work->solution->x[0]);
-    c_print("work->solution->x[1]: %.16f\n", work->solution->x[1]);
+    c_print("work->solution->x[0]: %.17f\n", work->solution->x[0]);
+    c_print("work->solution->x[1]: %.17f\n", work->solution->x[1]);
 }
 
 MU_TEST_SUITE(suite_update_after_setup) {
