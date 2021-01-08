@@ -20,11 +20,11 @@ extern "C" {
 
 // Set values lower than threshold MIN_SCALING to 1
 void limit_scaling(c_float *D, size_t n) {
-  size_t i;
+    size_t i;
 
-  for (i = 0; i < n; i++) {
-    D[i] = D[i] < MIN_SCALING ? 1.0 : D[i];
-  }
+    for (i = 0; i < n; i++) {
+        D[i] = D[i] < MIN_SCALING ? 1.0 : D[i];
+    }
 }
 
 void scale_data(QPALMWorkspace *work) {
@@ -73,6 +73,7 @@ void scale_data(QPALMWorkspace *work) {
     vec_add_scaled(work->Qx, work->data->q, work->dphi, 1, n);
     work->scaling->c = 1/c_max(1.0, vec_norm_inf(work->dphi, n));
     vec_self_mult_scalar(work->data->q, work->scaling->c, n);
+    vec_self_mult_scalar(work->Qx, work->scaling->c, n);
     
     ladel_scale_columns(work->data->Q, work->solver->D_temp);
     ladel_scale_rows(work->data->Q, work->solver->D_temp);
@@ -86,6 +87,49 @@ void scale_data(QPALMWorkspace *work) {
     // Scale problem vectors l, u
     vec_ew_prod(work->scaling->E, work->data->bmin, work->data->bmin, m);
     vec_ew_prod(work->scaling->E, work->data->bmax, work->data->bmax, m);    
+
+    // Scale initial vectors x, Ax and y (Qx already scaled)
+    vec_ew_prod(work->x, work->scaling->Dinv, work->x, n);
+    vec_ew_prod(work->Ax, work->scaling->E, work->Ax, m);
+    vec_ew_prod(work->y, work->scaling->E, work->y, m);
+    vec_self_mult_scalar(work->y, work->scaling->cinv, m);
+}
+
+void unscale_data(QPALMWorkspace *work)
+{
+    size_t n = work->data->n;
+    size_t m = work->data->m;
+    if (work->settings->scaling) 
+    {
+        // A (was scaled to EAD)
+        ladel_scale_rows(work->data->A, work->scaling->Einv);
+        ladel_scale_columns(work->data->A, work->scaling->Dinv);
+
+        // Q (was scaled to cDQD)
+        ladel_scale_columns(work->data->Q, work->scaling->Dinv);
+        ladel_scale_rows(work->data->Q, work->scaling->Dinv);
+        ladel_scale_scalar(work->data->Q, work->scaling->cinv);
+
+        // q (was scaled to cDq)
+        vec_ew_prod(work->scaling->Dinv, work->data->q, work->data->q, n);
+        vec_self_mult_scalar(work->data->q, work->scaling->cinv, n);
+
+        // bmin/bmax (was scaled to Ebmin/Ebmax)
+        vec_ew_prod(work->scaling->Einv, work->data->bmin, work->data->bmin, m);
+        vec_ew_prod(work->scaling->Einv, work->data->bmax, work->data->bmax, m);    
+
+        // // x
+        // vec_ew_prod(work->x, work->scaling->D, work->x, n);
+        // // Scale initial vectors x and y if they are warm-started
+        // if (work->x) vec_ew_prod(work->x, work->scaling->Dinv, work->x, n);
+        // if (work->y) 
+        // {
+        //     vec_ew_prod(work->y, work->scaling->Einv, work->y, m);
+        //     vec_self_mult_scalar(work->y, work->scaling->c, m);
+        // }
+        // 
+
+    }
 }
 
 

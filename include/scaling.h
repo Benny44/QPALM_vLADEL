@@ -39,9 +39,16 @@ extern "C" {
  * 
  *  
  * 
- * @param  work Workspace
+ * @param   work Workspace
  */
 void scale_data(QPALMWorkspace *work);
+
+/**
+ * Unscale the problem data. See scale_data.
+ * 
+ * @param   work Workspace
+ */
+void unscale_data(QPALMWorkspace *work);
 
 # ifdef __cplusplus
 }

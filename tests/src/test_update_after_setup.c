@@ -113,8 +113,10 @@ MU_TEST(test_update_after_setup) {
     mu_assert_long_eq(work->info->status_val, QPALM_SOLVED);
     mu_assert_double_eq(work->solution->x[0], 0.7, TOL);
     mu_assert_double_eq(work->solution->x[1], 2.3, TOL);
-    c_print("work->solution->x[0]: %.17f\n", work->solution->x[0]);
-    c_print("work->solution->x[1]: %.17f\n", work->solution->x[1]);
+
+    c_float x_temp[2];
+    x_temp[0] = work->solution->x[0];
+    x_temp[1] = work->solution->x[1];
 
     Qx = w; Ax = w+QNZMAX;
     Qx[0] = 1.0; Qx[1] = 1.0;
@@ -136,10 +138,9 @@ MU_TEST(test_update_after_setup) {
     qpalm_solve(work);
 
     mu_assert_long_eq(work->info->status_val, QPALM_SOLVED);
-    mu_assert_double_eq(work->solution->x[0], 0.7, TOL);
-    mu_assert_double_eq(work->solution->x[1], 2.3, TOL);
-    c_print("work->solution->x[0]: %.17f\n", work->solution->x[0]);
-    c_print("work->solution->x[1]: %.17f\n", work->solution->x[1]);
+    mu_assert_double_eq(work->solution->x[0], x_temp[0], 0);
+    mu_assert_double_eq(work->solution->x[1], x_temp[1], 0);
+
 }
 
 MU_TEST_SUITE(suite_update_after_setup) {

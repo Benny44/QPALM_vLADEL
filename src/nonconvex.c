@@ -174,6 +174,7 @@ void set_settings_nonconvex(QPALMWorkspace *work, solver_common *c){
     if (lambda < 0) {
         work->settings->proximal = TRUE;
         work->settings->gamma_init = 1/c_absval(lambda);
+        work->gamma = work->settings->gamma_init;
         work->settings->gamma_max = work->settings->gamma_init;
         work->gamma_maxed = TRUE;
     } else

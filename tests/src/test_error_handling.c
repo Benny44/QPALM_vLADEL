@@ -100,18 +100,6 @@ MU_TEST(test_invalid_settings_during_update_settings) {
     settings->max_iter = 1000;
 }
 
-MU_TEST(test_invalid_scaling_during_update_settings) {
-    work = qpalm_setup(data, settings);
-    mu_assert_long_eq(work->info->status_val, QPALM_UNSOLVED);
-
-    /*ask to unscale during update -> not possible to decrease scaling iterations */
-    settings->scaling = 0;
-    qpalm_update_settings(work, settings);
-    mu_assert_long_eq(work->info->status_val, QPALM_ERROR);
-
-    settings->scaling = 2;
-}
-
 MU_TEST(test_invalid_data_during_update_bounds) {
     work = qpalm_setup(data, settings);
     mu_assert_long_eq(work->info->status_val, QPALM_UNSOLVED);
@@ -141,7 +129,7 @@ MU_TEST_SUITE(suite_error_handling) {
     MU_RUN_TEST(test_invalid_settings_during_setup);
     MU_RUN_TEST(test_invalid_data_during_setup);
     MU_RUN_TEST(test_invalid_settings_during_update_settings);
-    MU_RUN_TEST(test_invalid_scaling_during_update_settings);
+    // MU_RUN_TEST(test_invalid_scaling_during_update_settings);
     MU_RUN_TEST(test_invalid_data_during_update_bounds);
     MU_RUN_TEST(test_invalid_status_value);
 }
