@@ -138,9 +138,9 @@ MU_TEST(test_update_after_setup) {
     qpalm_solve(work);
 
     mu_assert_long_eq(work->info->status_val, QPALM_SOLVED);
-    mu_assert_double_eq(work->solution->x[0], x_temp[0], 0);
+    //Should be exactly the same as before
+    mu_assert_double_eq(work->solution->x[0], x_temp[0], 0); 
     mu_assert_double_eq(work->solution->x[1], x_temp[1], 0);
-
 }
 
 MU_TEST_SUITE(suite_update_after_setup) {
