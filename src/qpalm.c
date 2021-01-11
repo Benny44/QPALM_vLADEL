@@ -303,8 +303,35 @@ void qpalm_warm_start(QPALMWorkspace *work, const c_float *x_warm_start, const c
 
 }
 
-static void qpalm_initialize(QPALMWorkspace *work, solver_common *c, solver_common *c2)
+static void qpalm_initialize(QPALMWorkspace *work, solver_common **common1, solver_common **common2)
 {
+    // If we have previously solved the problem, then reset the setup time
+    if (work->info->status_val != QPALM_UNSOLVED) 
+    {
+        #ifdef PROFILING
+        work->info->setup_time = 0;
+        #endif /* ifdef PROFILING */
+        work->info->status_val = QPALM_UNSOLVED;
+    }
+    #ifdef PROFILING
+    qpalm_tic(work->timer);
+    #endif
+
+    // Print header
+    #ifdef PRINTING
+    if (work->settings->verbose) 
+    {
+        print_header();
+    }
+    #endif
+
+    size_t n = work->data->n;
+    size_t m = work->data->m;
+    *common1 = ladel_workspace_allocate(n+m);
+    if (work->settings->enable_dual_termination) *common2 = ladel_workspace_allocate(n);
+    else *common2 = *common1;
+    solver_common *c = *common1, *c2 = *common2;
+
     if (!work->initialized) 
     {
         qpalm_warm_start(work, NULL, NULL);
@@ -318,9 +345,6 @@ static void qpalm_initialize(QPALMWorkspace *work, solver_common *c, solver_comm
     work->gamma_maxed = FALSE;
     vec_set_scalar_int(work->solver->active_constraints_old, FALSE, work->data->m);
 
-    size_t n = work->data->n;
-    size_t m = work->data->m;
-    
     if (work->x == NULL)
     {
         work->x = c_calloc(n, sizeof(c_float));
@@ -382,6 +406,10 @@ static void qpalm_initialize(QPALMWorkspace *work, solver_common *c, solver_comm
     {
         work->info->dual_objective = QPALM_NULL;
     }
+
+    #ifdef PROFILING
+    work->info->setup_time += qpalm_toc(work->timer); // Start timer
+    #endif /* ifdef PROFILING */
 }
 
 static void qpalm_termination(QPALMWorkspace *work, solver_common* c, solver_common *c2, c_int iter, c_int iter_out)
@@ -443,48 +471,18 @@ inline static void qpalm_terminate_on_status(QPALMWorkspace *work, solver_common
 
 void qpalm_solve(QPALMWorkspace *work) 
 {
-    // If we have previously solved the problem, then reset the setup time
-    if (work->info->status_val != QPALM_UNSOLVED) 
-    {
-        #ifdef PROFILING
-        work->info->setup_time = 0;
-        #endif /* ifdef PROFILING */
-        work->info->status_val = QPALM_UNSOLVED;
-    }
-    #ifdef PROFILING
-    qpalm_tic(work->timer);
-    #endif
-
-    // Print header
-    #ifdef PRINTING
-    if (work->settings->verbose) 
-    {
-        print_header();
-    }
-    #endif
-
-    size_t n = work->data->n;
-    size_t m = work->data->m;
-    //Initialize ladel and its settings
+    //Initialize ladel workspace, qpalm variables and perform scaling (timing added to setup)
     solver_common *c, *c2;
-    // c = &common;
-    c = ladel_workspace_allocate(n+m);
-    if (work->settings->enable_dual_termination) c2 = ladel_workspace_allocate(n);
-    else c2 = c;
+    qpalm_initialize(work, &c, &c2);
 
-    //Initialize and perform scaling
-    qpalm_initialize(work, c, c2);
-
+    // Start the timer for the solve routine
     #ifdef PROFILING
-    work->info->setup_time += qpalm_toc(work->timer); // Start timer
-    #endif /* ifdef PROFILING */
-
-    // Start the timer (after warm_start because this is already added to the setup time)
-    #ifdef PROFILING
-    qpalm_tic(work->timer); // Start timer
+    qpalm_tic(work->timer); 
     c_float current_time;
     #endif /* ifdef PROFILING */
     
+    size_t n = work->data->n;
+    size_t m = work->data->m;
     c_int iter;
     c_int iter_out = 0;
     c_int prev_iter = 0; /* iteration number at which the previous subproblem finished*/
@@ -495,7 +493,7 @@ void qpalm_solve(QPALMWorkspace *work)
 
     for (iter = 0; iter < work->settings->max_iter; iter++) 
     {
-        /* Check timing */
+        /* Check whether we passed the time limit */
         #ifdef PROFILING
         current_time = work->info->setup_time + qpalm_toc(work->timer); // Start timer
         if (current_time > work->settings->time_limit) 
