@@ -71,6 +71,15 @@ void update_gamma(QPALMWorkspace* work);
 void boost_gamma(   QPALMWorkspace  *work, 
                     solver_common   *c);
 
+void update_or_boost_gamma( QPALMWorkspace  *work, 
+                            solver_common   *c, 
+                            c_int           iter_out);
+
+void update_proximal_point_and_penalty(QPALMWorkspace *work, solver_common *c, c_int iter_out, c_float *eps_k_abs, c_float *eps_k_rel);
+
+void update_dual_iterate_and_parameters(QPALMWorkspace *work, solver_common *c, c_int iter_out, c_float *eps_k_abs, c_float *eps_k_rel);
+
+
 /**
  * Update the primal iterate.
  * 

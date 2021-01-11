@@ -495,6 +495,17 @@ void qpalm_solve(QPALMWorkspace *work)
 
     for (iter = 0; iter < work->settings->max_iter; iter++) 
     {
+        /* Check timing */
+        #ifdef PROFILING
+        current_time = work->info->setup_time + qpalm_toc(work->timer); // Start timer
+        if (current_time > work->settings->time_limit) 
+        {
+            qpalm_terminate_on_status(work, c, c2, iter, iter_out, QPALM_TIME_LIMIT_REACHED);
+            return;
+        }
+        #endif /* ifdef PROFILING */
+
+        /*Perform the iteration */
         compute_residuals(work, c);
         calculate_residual_norms_and_tolerances(work);
         
@@ -515,15 +526,7 @@ void qpalm_solve(QPALMWorkspace *work)
         }
         else if (check_subproblem_termination(work) || (no_change_in_active_constraints == 3)) 
         {
-            no_change_in_active_constraints = 0;
-
-            if (iter_out > 0 && work->info->pri_res_norm > work->eps_pri) 
-            {
-                update_sigma(work, c);
-            }
-
-            prea_vec_copy(work->yh, work->y, m);
-            prea_vec_copy(work->Atyh, work->Aty, n);
+            update_dual_iterate_and_parameters(work, c, iter_out, &eps_k_abs, &eps_k_rel);
         
             if(work->settings->enable_dual_termination) 
             {
@@ -535,66 +538,7 @@ void qpalm_solve(QPALMWorkspace *work)
                 }
             }
 
-            work->eps_abs_in = c_max(work->settings->eps_abs, work->settings->rho*work->eps_abs_in);
-            work->eps_rel_in = c_max(work->settings->eps_rel, work->settings->rho*work->eps_rel_in); 
-
-            if (work->settings->nonconvex)
-            {
-                if (work->settings->scaling) 
-                {
-                    /**NB Implementation detail: store Einv*Ax and Einv*z in temp_2m. 
-                     * The infinity norm of that vector is equal to the maximum
-                     * of the infinity norms of Einv*Ax and Einv*z.*/
-                    vec_ew_prod(work->scaling->Einv, work->Ax, work->temp_2m, m);
-                    vec_ew_prod(work->scaling->Einv, work->z, work->temp_2m + m, m);
-                    eps_k =  eps_k_abs + eps_k_rel*vec_norm_inf(work->temp_2m, m);                  
-                } 
-                else 
-                {
-                    eps_k =  eps_k_abs + eps_k_rel*c_max(vec_norm_inf(work->Ax, m), vec_norm_inf(work->z, m));
-                }
-                if (work->info->pri_res_norm < eps_k)
-                {
-                prea_vec_copy(work->x, work->x0, work->data->n);
-                eps_k_abs = c_max(work->settings->eps_abs, work->settings->rho*eps_k_abs);
-                eps_k_rel = c_max(work->settings->eps_rel, work->settings->rho*eps_k_rel);
-                }
-                else
-                {
-                /* We do not update the tolerances and proximal point */
-                }
-            } 
-            else
-            {
-                if(work->settings->proximal) 
-                {
-                    if (!work->gamma_maxed && iter_out > 0 && work->solver->nb_enter == 0 
-                        && work->solver->nb_leave == 0 && work->info->pri_res_norm < work->eps_pri) 
-                    {
-                        //Axys = Ax + y./sigma
-                        vec_ew_div(work->y, work->sigma, work->temp_m, work->data->m);
-                        vec_add_scaled(work->Ax, work->temp_m, work->Axys, 1, work->data->m);
-                        set_active_constraints(work);
-                        set_entering_leaving_constraints(work);
-                        if (work->solver->nb_enter == 0 && work->solver->nb_leave == 0) 
-                        {
-                            boost_gamma(work, c);
-                        } 
-                        else 
-                        {
-                            update_gamma(work);
-                        }
-                    } 
-                    else 
-                    {
-                    update_gamma(work);
-                    }
-                
-                    prea_vec_copy(work->x, work->x0, work->data->n);
-                }
-            }
-
-            prea_vec_copy(work->pri_res, work->pri_res_in, m);
+            no_change_in_active_constraints = 0;
             iter_out++;
             prev_iter = iter;
 
@@ -605,9 +549,8 @@ void qpalm_solve(QPALMWorkspace *work)
             }
             #endif    
         } 
-        else if (iter == prev_iter + work->settings->inner_max_iter)
+        else if (iter == prev_iter + work->settings->inner_max_iter) /*subproblem is hanging so try updating params*/
         { 
-            no_change_in_active_constraints = 0;     
             if (iter_out > 0 && work->info->pri_res_norm > work->eps_pri) 
             {
                 update_sigma(work, c);
@@ -620,37 +563,30 @@ void qpalm_solve(QPALMWorkspace *work)
             }
 
             prea_vec_copy(work->pri_res, work->pri_res_in, m);
+
+            no_change_in_active_constraints = 0;     
             iter_out++;
             prev_iter = iter;
         } 
-        else 
+        else /*primal update*/
         {
-            if (work->solver->nb_enter+work->solver->nb_leave) no_change_in_active_constraints = 0;
+            if (work->solver->nb_enter + work->solver->nb_leave) no_change_in_active_constraints = 0;
             else no_change_in_active_constraints++;
 
             if (mod(iter, work->settings->reset_newton_iter) == 0) work->solver->reset_newton = TRUE; 
             update_primal_iterate(work, c);
 
             #ifdef PRINTING
-            if (work->settings->verbose && mod(iter, work->settings->print_iter) == 0) {
+            if (work->settings->verbose && mod(iter, work->settings->print_iter) == 0) 
+            {
                 work->info->objective = compute_objective(work);
                 print_iteration(iter, work);
             }
             #endif
         }
-
-        #ifdef PROFILING
-        current_time = work->info->setup_time + qpalm_toc(work->timer); // Start timer
-        if (current_time > work->settings->time_limit) 
-        {
-            qpalm_terminate_on_status(work, c, c2, iter, iter_out, QPALM_TIME_LIMIT_REACHED);
-            return;
-        }
-
-        #endif /* ifdef PROFILING */
     }
 
-    // If we get here, qpalm has unfortunately hit the maximum number of iterations
+    /* If we get here, qpalm has unfortunately hit the maximum number of iterations */
     qpalm_terminate_on_status(work, c, c2, iter, iter_out, QPALM_MAX_ITER_REACHED);
     return;
 }

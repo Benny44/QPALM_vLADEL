@@ -125,7 +125,8 @@ void update_sigma(QPALMWorkspace* work, solver_common *c) {
 
 void update_gamma(QPALMWorkspace *work) {
     
-    if (work->gamma < work->settings->gamma_max) {
+    if (work->gamma < work->settings->gamma_max) 
+    {
         c_float prev_gamma = work->gamma;
         work->gamma = c_min(work->gamma*work->settings->gamma_upd, work->settings->gamma_max);
         work->solver->reset_newton = TRUE;
@@ -178,6 +179,91 @@ void boost_gamma(QPALMWorkspace *work, solver_common *c) {
         vec_add_scaled(work->Qd, work->d, work->Qd, work->tau/work->gamma - work->tau/prev_gamma, work->data->n);
         work->solver->reset_newton = TRUE;
     }
+}
+
+void update_or_boost_gamma(QPALMWorkspace *work, solver_common *c, c_int iter_out)
+{
+    if (!work->gamma_maxed && iter_out > 0 && work->solver->nb_enter == 0 
+        && work->solver->nb_leave == 0 && work->info->pri_res_norm < work->eps_pri) 
+    {
+        //Axys = Ax + y./sigma
+        vec_ew_div(work->y, work->sigma, work->temp_m, work->data->m);
+        vec_add_scaled(work->Ax, work->temp_m, work->Axys, 1, work->data->m);
+        set_active_constraints(work);
+        set_entering_leaving_constraints(work);
+        if (work->solver->nb_enter == 0 && work->solver->nb_leave == 0) 
+        {
+            boost_gamma(work, c);
+        } 
+        else 
+        {
+            update_gamma(work);
+        }
+    } 
+    else 
+    {
+        update_gamma(work);
+    }
+}
+
+void update_proximal_point_and_penalty(QPALMWorkspace *work, solver_common *c, c_int iter_out, c_float *eps_k_abs, c_float *eps_k_rel)
+{
+    if (work->settings->nonconvex)
+    {
+        c_float eps_k; 
+        c_int m = work->data->m;
+        if (work->settings->scaling) 
+        {
+            /**NB Implementation detail: store Einv*Ax and Einv*z in temp_2m. 
+             * The infinity norm of that vector is then equal to the maximum of both norms. */
+            vec_ew_prod(work->scaling->Einv, work->Ax, work->temp_2m, m);
+            vec_ew_prod(work->scaling->Einv, work->z, work->temp_2m + m, m);
+            eps_k =  (*eps_k_abs) + (*eps_k_rel)*vec_norm_inf(work->temp_2m, m);                  
+        } 
+        else 
+        {
+            eps_k =  (*eps_k_abs) + (*eps_k_rel)*c_max(vec_norm_inf(work->Ax, m), vec_norm_inf(work->z, m));
+        }
+
+        if (work->info->pri_res_norm < eps_k)
+        {
+            prea_vec_copy(work->x, work->x0, work->data->n);
+            *eps_k_abs = c_max(work->settings->eps_abs, work->settings->rho*(*eps_k_abs));
+            *eps_k_rel = c_max(work->settings->eps_rel, work->settings->rho*(*eps_k_rel));
+        }
+        else
+        {
+            /* We do not update the tolerances and proximal point in this case */
+        }
+    } 
+    else
+    {
+        if(work->settings->proximal) 
+        {
+            update_or_boost_gamma(work, c, iter_out);                
+            prea_vec_copy(work->x, work->x0, work->data->n);
+        }
+    }
+}
+
+void update_dual_iterate_and_parameters(QPALMWorkspace *work, solver_common *c, c_int iter_out, c_float *eps_k_abs, c_float *eps_k_rel)
+{
+    c_int n = work->data->n, m = work->data->m;
+
+    if (iter_out > 0 && work->info->pri_res_norm > work->eps_pri) 
+    {
+        update_sigma(work, c);
+    }
+
+    prea_vec_copy(work->yh, work->y, m);
+    prea_vec_copy(work->Atyh, work->Aty, n);
+
+    work->eps_abs_in = c_max(work->settings->eps_abs, work->settings->rho*work->eps_abs_in);
+    work->eps_rel_in = c_max(work->settings->eps_rel, work->settings->rho*work->eps_rel_in); 
+
+    update_proximal_point_and_penalty(work, c, iter_out, eps_k_abs, eps_k_rel);
+
+    prea_vec_copy(work->pri_res, work->pri_res_in, m);
 }
 
 void update_primal_iterate(QPALMWorkspace *work, solver_common *c) {
