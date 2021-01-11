@@ -19,27 +19,11 @@ extern "C" {
 #include "types.h"
 
 /**
- * Checks whether the problem is solved or infeasible and updates
- * the status accordingly.
- * 
- * The calculation of residuals and tolerances and infeasibility criteria
- * is delegated to other functions. If the problem is solved, the primal/dual
- * solution is stored in work->solution->x and work->solution->y. If the problem
- * is primal infeasible, the certificate of primal infeasibility is stored in
- * work->delta_y. If the problem is dual infeasible, the certificate of dual 
- * infeasibility is stored in work->delta_x.
- * 
- * @param work Workspace
- * @return Exitflag indicating the problem is solved or infeasible.
- */
-c_int check_termination(QPALMWorkspace *work);
-
-/**
- * Calls the primal and dual residual and tolerance routines.
+ * Calls the routines that compute the norm of the residuals and the tolerances.
  * 
  * @param work Workspace
  */
-void calculate_residuals_and_tolerances(QPALMWorkspace *work);
+void calculate_residual_norms_and_tolerances(QPALMWorkspace *work);
 
 /**
  * Calculates the infinity norm of the primal residual and stores it in work->info->pri_res_norm.

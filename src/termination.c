@@ -16,33 +16,7 @@
 #include "util.h"
 #include "iteration.h"
 
-c_int check_termination(QPALMWorkspace *work) {
-    calculate_residuals_and_tolerances(work);
-    
-    if (is_solved(work)) 
-    {
-        update_status(work->info, QPALM_SOLVED);
-        // store_solution(work);
-        return 1;
-    } else if (is_primal_infeasible(work)) {
-        update_status(work->info, QPALM_PRIMAL_INFEASIBLE);
-        // if (work->settings->scaling) {
-        //     vec_self_mult_scalar(work->delta_y, work->scaling->cinv, work->data->m);
-        //     vec_ew_prod(work->scaling->E, work->delta_y, work->delta_y, work->data->m);
-        // } 
-        return 1;
-    } else if (is_dual_infeasible(work)) {
-        update_status(work->info, QPALM_DUAL_INFEASIBLE);
-        // if (work->settings->scaling) {
-        //     vec_ew_prod(work->scaling->D, work->delta_x, work->delta_x, work->data->n);
-        // }
-        return 1;
-    } else {
-        return 0;
-    }   
-}
-
-void calculate_residuals_and_tolerances(QPALMWorkspace *work) {
+void calculate_residual_norms_and_tolerances(QPALMWorkspace *work) {
     calculate_primal_residual(work);
     calculate_dual_residuals(work);
     calculate_primal_tolerance(work);

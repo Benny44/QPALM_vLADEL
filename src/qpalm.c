@@ -435,6 +435,12 @@ static void qpalm_termination(QPALMWorkspace *work, solver_common* c, solver_com
     #endif
 }
 
+inline static void qpalm_terminate_on_status(QPALMWorkspace *work, solver_common *c, solver_common *c2, c_int iter, c_int iter_out, c_int status_val)
+{
+    update_status(work->info, status_val);
+    qpalm_termination(work, c, c2, iter, iter_out);
+}
+
 void qpalm_solve(QPALMWorkspace *work) 
 {
     // If we have previously solved the problem, then reset the setup time
@@ -490,12 +496,23 @@ void qpalm_solve(QPALMWorkspace *work)
     for (iter = 0; iter < work->settings->max_iter; iter++) 
     {
         compute_residuals(work, c);
-    
-        if (check_termination(work)) 
+        calculate_residual_norms_and_tolerances(work);
+        
+        if (is_solved(work)) 
         {
-            qpalm_termination(work, c, c2, iter, iter_out);
-            return; 
+            qpalm_terminate_on_status(work, c, c2, iter, iter_out, QPALM_SOLVED);
+            return;
+        }
+        else if (is_primal_infeasible(work)) 
+        {
+            qpalm_terminate_on_status(work, c, c2, iter, iter_out, QPALM_PRIMAL_INFEASIBLE);
+            return;
         } 
+        else if (is_dual_infeasible(work)) 
+        {
+            qpalm_terminate_on_status(work, c, c2, iter, iter_out, QPALM_DUAL_INFEASIBLE);
+            return;
+        }
         else if (check_subproblem_termination(work) || (no_change_in_active_constraints == 3)) 
         {
             no_change_in_active_constraints = 0;
@@ -513,9 +530,7 @@ void qpalm_solve(QPALMWorkspace *work)
                 work->info->dual_objective = compute_dual_objective(work, c);
                 if (work->info->dual_objective > work->settings->dual_objective_limit) 
                 {
-                    update_status(work->info, QPALM_DUAL_TERMINATED);
-
-                    qpalm_termination(work, c, c2, iter, iter_out);
+                    qpalm_terminate_on_status(work, c, c2, iter, iter_out, QPALM_DUAL_TERMINATED);
                     return; 
                 }
             }
@@ -628,18 +643,15 @@ void qpalm_solve(QPALMWorkspace *work)
         current_time = work->info->setup_time + qpalm_toc(work->timer); // Start timer
         if (current_time > work->settings->time_limit) 
         {
-            update_status(work->info, QPALM_TIME_LIMIT_REACHED);
-
-            qpalm_termination(work, c, c2, iter, iter_out);
+            qpalm_terminate_on_status(work, c, c2, iter, iter_out, QPALM_TIME_LIMIT_REACHED);
             return;
         }
 
         #endif /* ifdef PROFILING */
     }
-    // maxiter reached
-    update_status(work->info, QPALM_MAX_ITER_REACHED);
 
-    qpalm_termination(work, c, c2, iter, iter_out);
+    // If we get here, qpalm has unfortunately hit the maximum number of iterations
+    qpalm_terminate_on_status(work, c, c2, iter, iter_out, QPALM_MAX_ITER_REACHED);
     return;
 }
 
