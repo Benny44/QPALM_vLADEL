@@ -384,6 +384,57 @@ static void qpalm_initialize(QPALMWorkspace *work, solver_common *c, solver_comm
     }
 }
 
+static void qpalm_termination(QPALMWorkspace *work, solver_common* c, solver_common *c2, c_int iter, c_int iter_out)
+{
+    if (work->info->status_val == QPALM_SOLVED ||
+        work->info->status_val == QPALM_DUAL_TERMINATED ||
+        work->info->status_val == QPALM_TIME_LIMIT_REACHED ||
+        work->info->status_val == QPALM_MAX_ITER_REACHED) 
+    {
+        store_solution(work);
+    }
+    else if (work->info->status_val == QPALM_PRIMAL_INFEASIBLE)
+    {
+        if (work->settings->scaling) 
+        {
+            vec_self_mult_scalar(work->delta_y, work->scaling->cinv, work->data->m);
+            vec_ew_prod(work->scaling->E, work->delta_y, work->delta_y, work->data->m);
+        }
+    }
+    else if (work->info->status_val == QPALM_DUAL_INFEASIBLE)
+    {
+        if (work->settings->scaling) 
+        {
+            vec_ew_prod(work->scaling->D, work->delta_x, work->delta_x, work->data->n);
+        }
+    }
+
+    unscale_data(work);
+
+    work->initialized = FALSE;
+    work->info->iter = iter;
+    work->info->iter_out = iter_out;
+
+    /* Update solve time and run time */
+    #ifdef PROFILING
+        work->info->solve_time = qpalm_toc(work->timer);
+        work->info->run_time = work->info->setup_time +
+                        work->info->solve_time;
+    #endif /* ifdef PROFILING */
+    
+    c = ladel_workspace_free(c);
+    if (work->settings->enable_dual_termination) 
+        c2 = ladel_workspace_free(c2);
+
+    #ifdef PRINTING
+    if (work->settings->verbose) 
+    {
+        print_iteration(iter, work); 
+        print_final_message(work);
+    }
+    #endif
+}
+
 void qpalm_solve(QPALMWorkspace *work) 
 {
     // If we have previously solved the problem, then reset the setup time
@@ -442,31 +493,7 @@ void qpalm_solve(QPALMWorkspace *work)
     
         if (check_termination(work)) 
         {
-            unscale_data(work);
-
-            work->initialized = FALSE;
-            work->info->iter = iter;
-            work->info->iter_out = iter_out;
-            /* Update solve time and run time */
-            #ifdef PROFILING
-                work->info->solve_time = qpalm_toc(work->timer);
-                work->info->run_time = work->info->setup_time +
-                                work->info->solve_time;
-            #endif /* ifdef PROFILING */
-            
-
-            c = ladel_workspace_free(c);
-            if (work->settings->enable_dual_termination) 
-                c2 = ladel_workspace_free(c2);
-
-            #ifdef PRINTING
-            if (work->settings->verbose) 
-            {
-                print_iteration(iter, work); 
-                print_final_message(work);
-            }
-            #endif
-
+            qpalm_termination(work, c, c2, iter, iter_out);
             return; 
         } 
         else if (check_subproblem_termination(work) || (no_change_in_active_constraints == 3)) 
@@ -488,30 +515,7 @@ void qpalm_solve(QPALMWorkspace *work)
                 {
                     update_status(work->info, QPALM_DUAL_TERMINATED);
 
-                    store_solution(work);
-
-                    work->info->iter = iter;
-                    work->info->iter_out = iter_out;
-                    /* Update solve time and run time */
-                    #ifdef PROFILING
-                        work->info->solve_time = qpalm_toc(work->timer);
-                        work->info->run_time = work->info->setup_time + work->info->solve_time;
-                    #endif /* ifdef PROFILING */
-                    work->initialized = FALSE;
-
-                    ladel_workspace_free(c);
-                    if (work->settings->enable_dual_termination) 
-                        c2 = ladel_workspace_free(c2);
-
-                    #ifdef PRINTING
-                    if (work->settings->verbose) 
-                    {
-                        work->info->objective = compute_objective(work);
-                        print_iteration(iter, work); 
-                        print_final_message(work);
-                    }
-                    #endif
-
+                    qpalm_termination(work, c, c2, iter, iter_out);
                     return; 
                 }
             }
@@ -626,25 +630,7 @@ void qpalm_solve(QPALMWorkspace *work)
         {
             update_status(work->info, QPALM_TIME_LIMIT_REACHED);
 
-            unscale_data(work);
-            work->info->iter = iter;
-            work->info->iter_out = iter_out;
-            store_solution(work);
-            #ifdef PROFILING
-            work->info->solve_time = qpalm_toc(work->timer);
-            work->info->run_time = work->info->setup_time + work->info->solve_time;
-            #endif /* ifdef PROFILING */
-            work->initialized = FALSE;
-
-            ladel_workspace_free(c);
-            if (work->settings->enable_dual_termination)
-                c2 = ladel_workspace_free(c2);
-
-            #ifdef PRINTING
-                if (work->settings->verbose)
-                print_final_message(work);
-            #endif /* PRINTING */
-
+            qpalm_termination(work, c, c2, iter, iter_out);
             return;
         }
 
@@ -653,25 +639,8 @@ void qpalm_solve(QPALMWorkspace *work)
     // maxiter reached
     update_status(work->info, QPALM_MAX_ITER_REACHED);
 
-    unscale_data(work);
-    work->info->iter = iter;
-    work->info->iter_out = iter_out;
-    store_solution(work);
-    #ifdef PROFILING
-        work->info->solve_time = qpalm_toc(work->timer);
-        work->info->run_time = work->info->setup_time +
-                            work->info->solve_time;
-    #endif /* ifdef PROFILING */
-    work->initialized = FALSE;
-
-    ladel_workspace_free(c);
-    if (work->settings->enable_dual_termination) 
-            c2 = ladel_workspace_free(c2);
-
-    #ifdef PRINTING
-        if (work->settings->verbose)
-        print_final_message(work);
-    #endif /* PRINTING */
+    qpalm_termination(work, c, c2, iter, iter_out);
+    return;
 }
 
 void qpalm_update_settings(QPALMWorkspace* work, const QPALMSettings *settings) 
