@@ -367,6 +367,12 @@ static void qpalm_initialize(QPALMWorkspace *work, solver_common **common1, solv
         vec_set_scalar(work->y, 0., m);
     }
 
+    for (size_t i = 0; i < work->data->m; i++)
+    {
+        if (work->data->bmax[i] > QPALM_INFTY) work->data->bmax[i] = QPALM_INFTY;
+        if (work->data->bmin[i] < -QPALM_INFTY) work->data->bmin[i] = -QPALM_INFTY;
+    }
+    
     if (work->settings->scaling) 
     {
         scale_data(work); 
