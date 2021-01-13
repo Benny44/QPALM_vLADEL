@@ -176,6 +176,7 @@ message(STATUS "We can find the install_libdir in the ${CMAKE_INSTALL_LIBDIR} fo
 if ("${CMAKE_INSTALL_LIBDIR}" STREQUAL "")
 SET(CMAKE_INSTALL_LIBDIR  ${LIB_DIR})
 endif()
+message(STATUS "We can find the install_libdir in the ${CMAKE_INSTALL_LIBDIR} folder")
 
 install(TARGETS qpalm
 EXPORT  ${PROJECT_NAME}
