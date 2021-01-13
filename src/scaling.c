@@ -19,7 +19,8 @@ extern "C" {
 #include "ladel.h"
 
 // Set values lower than threshold MIN_SCALING to 1
-void limit_scaling(c_float *D, size_t n) {
+void limit_scaling(c_float *D, size_t n) 
+{
     size_t i;
 
     for (i = 0; i < n; i++) {
@@ -27,9 +28,8 @@ void limit_scaling(c_float *D, size_t n) {
     }
 }
 
-void scale_data(QPALMWorkspace *work) {
-    solver_common c;
-
+void scale_data(QPALMWorkspace *work) 
+{
     size_t n = work->data->n;
     size_t m = work->data->m;
     vec_set_scalar(work->scaling->D, 1, n);
@@ -117,18 +117,6 @@ void unscale_data(QPALMWorkspace *work)
         // bmin/bmax (was scaled to Ebmin/Ebmax)
         vec_ew_prod(work->scaling->Einv, work->data->bmin, work->data->bmin, m);
         vec_ew_prod(work->scaling->Einv, work->data->bmax, work->data->bmax, m);    
-
-        // // x
-        // vec_ew_prod(work->x, work->scaling->D, work->x, n);
-        // // Scale initial vectors x and y if they are warm-started
-        // if (work->x) vec_ew_prod(work->x, work->scaling->Dinv, work->x, n);
-        // if (work->y) 
-        // {
-        //     vec_ew_prod(work->y, work->scaling->Einv, work->y, m);
-        //     vec_self_mult_scalar(work->y, work->scaling->c, m);
-        // }
-        // 
-
     }
 }
 

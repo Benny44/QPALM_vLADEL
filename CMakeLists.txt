@@ -13,11 +13,19 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 ################## Configure directories ###################
 ############################################################
 set(LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/../lib)
-if (hasParent)
-# Assume the relevant directories have been set
-else()
-  SET(CMAKE_INSTALL_LIBDIR  ${LIB_DIR})
+string(TOLOWER ${CMAKE_SOURCE_DIR} my_source_dir) 
+string(TOLOWER ${CMAKE_CURRENT_SOURCE_DIR} my_current_source_dir) 
+if(${source_dir} STREQUAL ${current_source_dir})   
+message(STATUS "not in subdirectory") 
+SET(CMAKE_INSTALL_LIBDIR  ${LIB_DIR})
+else()   
+message(STATUS "in subdirectory") 
 endif()
+# if (hasParent)
+# # Assume the relevant directories have been set
+# else()
+#   SET(CMAKE_INSTALL_LIBDIR  ${LIB_DIR})
+# endif()
 set(INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/../include)
 make_directory(${INCLUDE_DIR})
 if (NOT WIN32)
@@ -163,7 +171,6 @@ if (JULIA)
 endif()
 
 add_library(qpalm ${SRC})
-
 
 message(STATUS "We can find the install_libdir in the ${CMAKE_INSTALL_LIBDIR} folder")
 

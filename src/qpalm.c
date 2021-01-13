@@ -715,9 +715,6 @@ void qpalm_update_Q_A(QPALMWorkspace *work, const c_float *Qx, const c_float *Ax
     prea_vec_copy(Qx, Q->x, Q->nzmax);
     prea_vec_copy(Ax, A->x, A->nzmax);
     
-    solver_common common, *c;
-    c = &common;
-
     # ifdef PROFILING
     work->info->setup_time += qpalm_toc(work->timer);
     # endif /* ifdef PROFILING */
@@ -725,7 +722,6 @@ void qpalm_update_Q_A(QPALMWorkspace *work, const c_float *Qx, const c_float *Ax
 
 void qpalm_cleanup(QPALMWorkspace *work) 
 {
-  
     if (work) 
     { 
         // Free Data
