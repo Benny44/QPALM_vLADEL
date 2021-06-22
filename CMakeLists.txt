@@ -49,6 +49,7 @@ if (USE_CHOLMOD AND USE_LADEL)
     message (WARNING "Both CHOLMOD and LADEL selected. Using LADEL as the default.")
 endif()
 
+option (NONCONVEX "Compile also for nonconvex QPs" ON)
 option (COVERAGE "Perform code coverage" OFF)
 option (PYTHON "Compile for the python interface" OFF)
 option (JULIA "Compile for the julia interface" OFF)
@@ -95,13 +96,19 @@ if (TIMING)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPROFILING")
 endif()
 
+if (NONCONVEX)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DCOMPILE_NONCONVEX")
+endif()
+
 ############################################################
 ###################### Find libraries ######################
 ############################################################
-find_library(LAPACK names lapack
-    HINTS $ENV{MINICONDA_LIB})
-find_library(LAPACKE names lapacke
-	HINTS ${CMAKE_LIBRARY_PATH} $ENV{MINICONDA_LIB})
+if (NONCONVEX)
+    find_library(LAPACK names lapack
+        HINTS $ENV{MINICONDA_LIB})
+    find_library(LAPACKE names lapacke
+        HINTS ${CMAKE_LIBRARY_PATH} $ENV{MINICONDA_LIB})
+endif()
 
 if (USE_CHOLMOD)
     if (WIN32)
@@ -194,14 +201,14 @@ if (USE_CHOLMOD)
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
                     $ENV{MINICONDA_INCLUDE})
         target_link_libraries(qpalm ${MKL_INTEL_LP64} ${MKL_CORE} ${MKL_INTEL_THREAD} ${IOMP5} ${PTHREAD}
-                            ${LAPACK} cholmod_new suitesparseconfig_new ${LAPACKE})
+                            cholmod_new suitesparseconfig_new)
     else()
         target_include_directories(qpalm
             PUBLIC
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
                     $ENV{MINICONDA_INCLUDE}
                     ${SUITESPARSE_INCLUDE})
-        target_link_libraries(qpalm ${BLAS} ${LAPACK} ${CHOLMOD_LIB} ${SUITESPARSE_LIB} ${LAPACKE})
+        target_link_libraries(qpalm ${BLAS} ${CHOLMOD_LIB} ${SUITESPARSE_LIB})
     endif()
 endif()
 
@@ -211,9 +218,12 @@ if (USE_LADEL)
                     $ENV{MINICONDA_INCLUDE}
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/LADEL/include>)
-    target_link_libraries(qpalm ladel ${LAPACK} ${LAPACKE})
+    target_link_libraries(qpalm ladel)
 endif()
 
+if (NONCONVEX)
+    target_link_libraries(qpalm ${LAPACK} ${LAPACKE})
+endif()
 
 if (PYTHON)
     find_package(PythonInterp REQUIRED)

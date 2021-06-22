@@ -14,17 +14,17 @@
 #include "global_opts.h"
 #include "lin_alg.h"
 #include "util.h"
-#ifdef MATLAB /* For the mexinterface, call lapack included in matlab */
-    #include "lapack.h"
-#else
-    #include <lapacke.h>
-#endif
 
 /*TODO: make this a setting */
 #define LOBPCG_TOL 1e-5 /**< Tolerance on the infinity norm of the residual in lobpcg. */ 
 
 
-
+#ifdef COMPILE_NONCONVEX
+#ifdef MATLAB /* For the mexinterface, call lapack included in matlab */
+    #include "lapack.h"
+#else
+    #include <lapacke.h>
+#endif
 
 static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
     c_float lambda, norm_w;
@@ -166,9 +166,11 @@ static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
     return lambda;
 
 }
+#endif /*COMPILE_NONCONVEX*/
 
 
 void set_settings_nonconvex(QPALMWorkspace *work, solver_common *c){
+    #ifdef COMPILE_NONCONVEX
     c_float lambda;
     lambda = lobpcg(work, NULL, c);
     if (lambda < 0) {
@@ -181,6 +183,12 @@ void set_settings_nonconvex(QPALMWorkspace *work, solver_common *c){
     {
         work->settings->nonconvex = FALSE;
     }
+    #else
+    #ifdef PRINTING
+    c_print("Warning: nonconvex is not supported in this version of QPALM. Setting it to false.\n");
+    work->settings->nonconvex = FALSE;
+    #endif
+    #endif /*COMPILE_NONCONVEX*/
 }
 
 c_float gershgorin_max(solver_sparse* M, c_float *center, c_float *radius){

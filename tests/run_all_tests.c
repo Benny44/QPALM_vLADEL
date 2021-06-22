@@ -27,7 +27,9 @@ int main(){
     MU_RUN_SUITE(suite_prim_inf_qp);
     MU_RUN_SUITE(suite_dua_inf_qp);
     MU_RUN_SUITE(suite_degen_hess);
+    #ifdef COMPILE_NONCONVEX
     MU_RUN_SUITE(suite_nonconvex);
+    #endif
     MU_RUN_SUITE(suite_update);
     MU_RUN_SUITE(suite_ls_qp);
     MU_RUN_SUITE(suite_casadi_general_unconstrained);
