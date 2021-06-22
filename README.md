@@ -92,6 +92,9 @@ You can now find the the documentation [here](https://benny44.github.io/QPALM_vL
 
 Check out the paper below for detailed benchmark tests comparing QPALM with state-of-the-art solvers.
 
+ * [QPALM: A Newton-type Proximal Augmented Lagrangian Method for Quadratic Programs](https://arxiv.org/abs/1911.02934)
+ * [QPALM: A Proximal Augmented Lagrangian Method for Nonconvex Quadratic Programs](https://arxiv.org/abs/2010.02653)
+
 ## Citing
 
 If you use QPALM in your research, please cite the following paper

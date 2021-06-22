@@ -135,6 +135,17 @@ struct QPALM_TIMER {
   struct timespec toc;
 };
 
+// FreeBSD
+#  elif defined __FreeBSD__ // ifdef _WIN32
+
+#   include <time.h>
+#   include <sys/time.h>
+
+struct QPALM_TIMER {
+  struct timespec tic;
+  struct timespec toc;
+};
+
 #  endif // ifdef _WIN32
 
 /*! \endcond */
