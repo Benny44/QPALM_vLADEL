@@ -74,30 +74,31 @@ end
  % This is exceedingly ugly.  The MATLAB mex command needs to be told where to
  % find the LAPACK and BLAS libraries, which is a real portability nightmare.
 
-if (pc)
-    if (verLessThan ('matlab', '7.5'))
-        lapack = 'libmwlapack.lib' ;
-    else
-        lapack = 'libmwlapack.lib libmwblas.lib' ;
-    end
-else
-    if (verLessThan ('matlab', '7.5'))
-        lapack = '-lmwlapack' ;
-    else
-        lapack = '-lmwlapack -lmwblas' ;
-    end
-end
-
-if (is64 && ~verLessThan ('matlab', '7.8'))
-    % versions 7.8 and later on 64-bit platforms use a 64-bit BLAS
-%     fprintf ('with 64-bit BLAS\n') ;
-    flags = [flags ' -DBLAS64'] ;
-end
-
-if (~(pc || mac))
-    % for POSIX timing routine
-    lapack = [lapack ' -lrt'] ;
-end
+% if (pc)
+%     if (verLessThan ('matlab', '7.5'))
+%         lapack = 'libmwlapack.lib' ;
+%     else
+%         lapack = 'libmwlapack.lib libmwblas.lib' ;
+%     end
+% else
+%     if (verLessThan ('matlab', '7.5'))
+%         lapack = '-lmwlapack' ;
+%     else
+%         lapack = '-lmwlapack -lmwblas' ;
+%     end
+% end
+% 
+% if (is64 && ~verLessThan ('matlab', '7.8'))
+%     % versions 7.8 and later on 64-bit platforms use a 64-bit BLAS
+% %     fprintf ('with 64-bit BLAS\n') ;
+%     flags = [flags ' -DBLAS64'] ;
+% end
+% 
+lapack = [];
+% if (~(pc || mac))
+%     % for POSIX timing routine
+%     lapack = [lapack ' -lrt'] ;
+% end
 
 %% List all the source files
 qpalm_src = { ...
@@ -186,7 +187,7 @@ end
 obj = '' ;
 
 kk = 0 ;
-cflags = 'CFLAGS="\$CFLAGS -std=c99 -fPIC -DMATLAB -DDAMD -O3 -DPROFILING -DPRINTING"';
+cflags = 'CFLAGS="\$CFLAGS -std=c99 -fPIC -DMATLAB -DDAMD -O3 -DPROFILING -DPRINTING -DCOMPILE_NONCONVEX"';
 flags = [cflags ' ' flags];
 
 for f = source

@@ -141,7 +141,15 @@ static void* c_calloc(size_t num, size_t size) {
 #endif
 
 #include <math.h>
-#  define c_sqrt sqrt /**< square root */
+#ifdef DFLOAT
+#define c_sqrt sqrtf /**< square root */
+#define c_acos acosf /**< arc cosine */
+#define c_cos  cosf  /**< cosine */
+#else
+#define c_sqrt sqrt /**< square root */
+#define c_acos acos /**< arc cosine */
+#define c_cos  cos  /**< cosine */
+#endif /* DFLOAT */
 
 /** @} */
 

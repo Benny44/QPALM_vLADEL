@@ -15,16 +15,172 @@
 #include "lin_alg.h"
 #include "util.h"
 
+#ifdef COMPILE_NONCONVEX
+#include <math.h>
+
 /*TODO: make this a setting */
 #define LOBPCG_TOL 1e-5 /**< Tolerance on the infinity norm of the residual in lobpcg. */ 
 
-
-#ifdef COMPILE_NONCONVEX
-#ifdef MATLAB /* For the mexinterface, call lapack included in matlab */
-    #include "lapack.h"
-#else
-    #include <lapacke.h>
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
 #endif
+
+#define RREF_TOL 1e-8
+
+static c_float min_root_third_order(c_float a, c_float b, c_float c, c_float d)
+{
+    c_float r[3] = {0};
+    c_float di, di_sqrt;
+    if (a == 0)
+    {
+        // Not a cubic polynomial, should not happen 
+        c_eprint("Not a cubic polynomial.");
+    }
+    else if (d == 0)
+    {
+        di = b*b - 4*a*c;
+        if (di < 0)
+        {
+            c_eprint("Imaginary roots. This should not happen.");
+        }
+        di_sqrt = c_sqrt(di);
+        r[0] = (-b-di_sqrt)/(2*a);
+        r[1] = (-b+di_sqrt)/(2*a); 
+    }
+    else
+    {
+        c_float temp, q, p, re, an, r13;
+        temp = 1/a;
+        b = b*temp;
+        c = c*temp;
+        d = d*temp;
+        q = (3.0*c - (b*b))/9.0;
+        p = (-(27.0*d) + b*(9.0*c - 2.0*(b*b)))/54.0;
+        di = q*q*q + p*p;
+        re = b/3.0;
+        if (di > 0)
+        {
+             c_eprint("Imaginary roots. This should not happen.");
+        }   
+        else 
+        {
+            q = -q;
+            an = q*q*q;
+            an = c_acos(p/c_sqrt(an));
+            r13 = 2.0*c_sqrt(q);
+            r[0] = -re + r13*c_cos(an/3.0);
+            r[1] = -re + r13*c_cos((an + 2.0*M_PI)/3.0);
+            r[2] = -re + r13*c_cos((an + 4.0*M_PI)/3.0);
+        }
+    }
+    
+    if (r[0] <= r[1] && r[0] <= r[2]) return r[0];
+    else return c_min(r[1], r[2]);
+}
+
+
+static int custom_rref(c_float D[3][3])
+{
+    c_float p, temp[3], a[3];
+
+    // First column
+    a[0] = c_absval(D[0][0]); a[1] = c_absval(D[0][1]); a[2] = c_absval(D[0][2]); 
+    if (a[0] < a[1] || a[0] < a[2])
+    {
+        if (a[1] > a[2])
+        {
+            if (a[1] < RREF_TOL) return 0;
+            // swap row 0 and 1
+            temp[0] = D[0][0]; temp[1] = D[0][1]; temp[2] = D[0][2];
+            D[0][0] = D[1][0]; D[0][1] = D[1][1]; D[0][2] = D[1][2];
+            D[1][0] = temp[0]; D[1][1] = temp[1]; D[1][2] = temp[2];  
+        }
+        else
+        {
+            if (a[2] < RREF_TOL) return 0;
+            // swap row 0 and 2
+            temp[0] = D[0][0]; temp[1] = D[0][1]; temp[2] = D[0][2];
+            D[0][0] = D[2][0]; D[0][1] = D[2][1]; D[0][2] = D[2][2];
+            D[2][0] = temp[0]; D[2][1] = temp[1]; D[2][2] = temp[2];  
+        }
+    }
+    else
+    {
+        if (a[0] < RREF_TOL) return 0;
+    }
+    
+    p = 1.0/D[0][0];
+    D[0][1] *= p; D[0][2] *= p; D[0][0] = 1.0;
+    D[1][1] -= D[1][0]*D[0][1]; D[1][2] -= D[1][0]*D[0][2]; D[1][0] = 0;
+    D[2][1] -= D[2][0]*D[0][1]; D[2][2] -= D[2][0]*D[0][2]; D[2][0] = 0;
+
+    // Second column
+    a[1] = c_absval(D[1][1]); a[2] = c_absval(D[2][1]);
+    if (a[1] < a[2])
+    {
+        if (a[2] < RREF_TOL) return 1;
+        temp[2] = D[1][2];
+        D[1][1] = D[2][1]; D[1][2] = D[2][2];
+        D[2][2] = temp[2]; D[2][1] = 0;
+    }
+    else
+    {
+        if (a[1] < RREF_TOL) return 1;
+    }
+
+    p = 1.0/D[1][1];
+    D[1][2] *= p; D[1][1] = 1.0;
+    D[0][2] -= D[0][1]*D[1][2]; D[0][1] = 0;
+    D[2][2] -= D[2][1]*D[1][2]; D[2][1] = 0;
+
+    return 2;
+}
+
+static c_float custom_eig(const c_float B[3][3], const c_float C[3][3], c_float x[3])
+{
+    c_float a, b, c, d;
+    c_float xqx = B[0][0], xqw = B[0][1], xqp = B[0][2], wqw = B[1][1], wqp = B[1][2], pqp = B[2][2], xp = C[0][2], wp = C[1][2];
+    a = wp*wp + xp*xp - 1;
+    b = (-xqx*wp*wp + 2*xqw*wp*xp - 2*wqp*wp - wqw*xp*xp - 2*xqp*xp + pqp + wqw + xqx);
+    c = (wqp*wqp - 2*xp*wqp*xqw + 2*wp*xqx*wqp + xqp*xqp - 2*wp*xqp*xqw + 2*wqw*xp*xqp + xqw*xqw - pqp*wqw - pqp*xqx - wqw*xqx);
+    d = - xqx*wqp*wqp + 2*wqp*xqp*xqw - wqw*xqp*xqp - pqp*xqw*xqw + pqp*wqw*xqx;
+    c_float lam = min_root_third_order(a, b, c, d);
+    
+    /* D = B - lam*C */
+    c_float D[3][3];
+    D[0][0] = B[0][0] - lam*C[0][0];
+    D[0][1] = B[0][1];
+    D[0][2] = B[0][2] - lam*C[0][2];
+    D[1][0] = B[1][0];
+    D[1][1] = B[1][1] - lam*C[1][1];
+    D[1][2] = B[1][2] - lam*C[1][2];
+    D[2][0] = B[2][0] - lam*C[2][0];
+    D[2][1] = B[2][1] - lam*C[2][1];
+    D[2][2] = B[2][2] - lam*C[2][2];
+    
+    int ind = custom_rref(D);
+
+    if (ind == 0)
+    {
+        x[0] = 1; x[1] = 0; x[2] = 0;
+    }
+    else 
+    if (ind == 1)
+    {
+        x[0] = 0; x[1] = 1; x[2] = 0;
+    }
+    else
+    {
+        c_float temp = 1/c_sqrt(1 + D[0][2]*D[0][2] - 2*D[0][2]*C[0][2] + D[1][2]*D[1][2] - 2*D[1][2]*C[1][2]);
+
+        x[0] = -D[0][2]*temp;
+        x[1] = -D[1][2]*temp;
+        x[2] = temp;
+    }
+
+    return lam;
+    
+}
 
 static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
     c_float lambda, norm_w;
@@ -32,7 +188,6 @@ static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
 
     size_t n = work->data->n;
     solver_sparse* A = work->data->Q;
-    // size_t m = work->data->m;
 
     /*Current guess of the eigenvector */
     if (x == NULL) {
@@ -49,7 +204,6 @@ static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
     }
     solver_dense *x_chol = work->solver->d;
 
-    
     c_float *Ax = work->Qd;
     solver_dense * Ax_chol = work->solver->Qd;
     mat_vec(A, x_chol , Ax_chol, c);
@@ -69,8 +223,7 @@ static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
     /* Compressed system B = [x, w, p]'*Q*[x, w, p] */
     c_float B[3][3]; 
     c_float C[3][3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}; /* C = [1 0 xp; 0 1 wp; xp wp 1] Takes into account that p is not orthonormal with x, w */
-    c_float lambda_B[3]; /* The eigenvalues of B */
-    c_float *y; /* Eigenvector corresponding to min(lambda_B) */
+    c_float y[3]; /* Eigenvector corresponding to min(lambda_B) */
     c_float xAw, wAw, xAp, wAp, pAp, xp, wp;
 
     /* Compute residual and make it orthonormal wrt x */
@@ -83,23 +236,26 @@ static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
 
     /* In the first compressed system, there is no p yet, so it is 2 by 2 */
     c_float B_init[2][2] = {{lambda, xAw}, {xAw, wAw}};
-    c_float lambda_init[2];
-
-    /* Lapack variables */
-    char jobz = 'V';
-    char uplo = 'L';
-
-    /* Solve eigenvalue problem */
-    #ifdef MATLAB
-        double lapack_work[10];
-        long int info = 0, dim = 2, lwork = 10, itype = 1;
-        dsyev(&jobz, &uplo, &dim, *B_init, &dim, lambda_init, lapack_work, &lwork, &info);
-    #else
-        int info = 0, dim = 2, itype = 1;
-        info = LAPACKE_dsyev(LAPACK_COL_MAJOR, jobz, uplo, dim, *B_init, dim, lambda_init);
-    #endif
-    lambda = lambda_init[0];
-    y = B_init[0];
+    
+    /* Solve 2x2 eigenvalue system */
+    c_float b, cc, di;
+    b = -(lambda + wAw);
+    cc = lambda*wAw - xAw*xAw;
+    di = b*b - 4*cc;
+    lambda = (-b-c_sqrt(di))/2;
+    B_init[0][0] -= lambda;
+    B_init[1][1] -= lambda;
+    if (c_absval(B_init[0][0]) < RREF_TOL)
+    {
+        y[0] = 1; y[1] = 0;
+    }
+    else
+    {
+        B_init[0][1] /= B_init[0][0];
+        b = 1/c_sqrt(1 + B_init[0][1]*B_init[0][1]);
+        y[0] = -B_init[0][1]*b;
+        y[1] = b;
+    }
 
     /* Compute first p */
     vec_mult_scalar(w, y[1], p, n);
@@ -107,8 +263,7 @@ static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
     vec_add_scaled(p, x, x, y[0], n);
     vec_add_scaled(Ap, Ax, Ax, y[0], n);
     
-    dim = 3; /* From now on, the dimension of the eigenproblem to solve will be 3 */
-    size_t max_iter = 1000; /*TODO: make this a setting */
+    size_t max_iter = 10000; /*TODO: make this a setting */
     for (i = 0; i < max_iter; i++) {
 
         /* Update w */
@@ -143,16 +298,9 @@ static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
         B[2][0] = xAp;    B[2][1] = wAp; B[2][2] = pAp;
 
         C[0][2] = xp; C[1][2] = wp; C[2][0] = xp; C[2][1] = wp; 
-        C[2][2] = 1.0; /* The dsygv routine might override this element, therefore we reset it here.*/
 
-        /* Solve eigenproblem B*x = lambda*C*x */
-        #ifdef MATLAB
-            dsygv(&itype, &jobz, &uplo, &dim, *B, &dim, *C, &dim, lambda_B, lapack_work, &lwork, &info);
-        #else
-            info = LAPACKE_dsygv(LAPACK_COL_MAJOR, itype, 'V', 'L', dim, *B, dim, *C, dim, lambda_B);
-        #endif
-        lambda = lambda_B[0];
-        y = B[0];
+        /* Solve 3x3 eigenvalue system By = lambda*Cy */
+        lambda = custom_eig(B, C, y);
 
         /* Update p and x */
         vec_mult_add_scaled(p, w, y[2], y[1], n);
@@ -160,6 +308,11 @@ static c_float lobpcg(QPALMWorkspace *work, c_float *x, solver_common *c) {
         vec_mult_add_scaled(x, p, y[0], 1, n);
         vec_mult_add_scaled(Ax, Ap, y[0], 1, n);
 
+        /* Restore consistency between x and lambda once every so often */
+        if (mod(i, 50) == 0)
+        {
+            lambda = vec_prod(x, Ax, n);
+        }
     }
     
     //TODO: Implement error handling here

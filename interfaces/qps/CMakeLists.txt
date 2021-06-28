@@ -10,5 +10,3 @@ message(${CMAKE_CURRENT_LIST_DIR}/include)
 target_include_directories(qpalm_qps PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_link_libraries(qpalm_qps qpalm)
-
-

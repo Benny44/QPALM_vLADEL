@@ -103,13 +103,6 @@ endif()
 ############################################################
 ###################### Find libraries ######################
 ############################################################
-if (NONCONVEX)
-    find_library(LAPACK names lapack
-        HINTS $ENV{MINICONDA_LIB})
-    find_library(LAPACKE names lapacke
-        HINTS ${CMAKE_LIBRARY_PATH} $ENV{MINICONDA_LIB})
-endif()
-
 if (USE_CHOLMOD)
     if (WIN32)
         find_library(CHOLMOD_LIB names cholmod 
@@ -215,15 +208,11 @@ endif()
 if (USE_LADEL)
     target_include_directories(qpalm
             PUBLIC
-                    $ENV{MINICONDA_INCLUDE}
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
                     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/LADEL/include>)
     target_link_libraries(qpalm ladel)
 endif()
 
-if (NONCONVEX)
-    target_link_libraries(qpalm ${LAPACK} ${LAPACKE})
-endif()
 
 if (PYTHON)
     find_package(PythonInterp REQUIRED)

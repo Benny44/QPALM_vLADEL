@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# export SUITESPARSE_ROOT_LIB=${HOME}/miniconda3/lib
-# export SUITESPARSE_ROOT_INCLUDE=${HOME}/miniconda3/include
-
-export MINICONDA_LIB=${HOME}/miniconda3/lib
-export MINICONDA_INCLUDE=${HOME}/miniconda3/include
-
-#ls ${SUITESPARSE_ROOT_LIB}
-#ls ${SUITESPARSE_ROOT_INCLUDE}
-
 curdir=`pwd`
 
 #Build direcetories
@@ -34,6 +25,9 @@ builddir=$curdir/build/debug
 solver="ladel"
 
 if [ $solver = "cholmod" ]; then
+  export MINICONDA_LIB=${HOME}/miniconda3/lib
+  export MINICONDA_INCLUDE=${HOME}/miniconda3/include
+  
   metisdir=$curdir/build/metis
   cd $metisdir
 

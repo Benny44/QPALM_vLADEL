@@ -1,8 +1,5 @@
 #!/bin/bash
 
-export MINICONDA_LIB=${HOME}/miniconda3/lib
-export MINICONDA_INCLUDE=${HOME}/miniconda3/include
-
 curdir=`pwd`
 
 #Build direcetories
