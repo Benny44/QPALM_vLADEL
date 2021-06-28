@@ -213,6 +213,9 @@ if (USE_LADEL)
     target_link_libraries(qpalm ladel)
 endif()
 
+if(UNIX)
+    target_link_libraries(qpalm m)
+endif(UNIX)
 
 if (PYTHON)
     find_package(PythonInterp REQUIRED)

@@ -28,7 +28,3 @@ target_include_directories(run_all_tests
 
 target_link_libraries(run_all_tests qpalm)
 
-if(UNIX)
-target_link_libraries(run_all_tests m)
-endif(UNIX)
-
