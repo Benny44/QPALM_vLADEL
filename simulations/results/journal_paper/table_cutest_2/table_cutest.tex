@@ -1,0 +1,20 @@
+\documentclass{amsart}
+
+\usepackage{longtable}
+
+\begin{document}
+
+{\small
+	\begin{longtable}[ht]{lcc|cc|cc}
+		& & & \multicolumn{2}{c}{Runtime} & \multicolumn{2}{c}{Objective} \\
+		\multicolumn{1}{l}{Problem} & n & m & QPALM & IPOPT & QPALM & IPOPT \\
+		\hline
+		\input{cutest.tex}
+		\caption{%
+			Runtime and final objective value comparison for QPALM and IPOPT applied to the nonconvex QPs of the Cutest test set. Failure codes: PI = primal infeasible, DI = dual infeasible and F = time limit exceeded (or numerical issues).%
+		}%
+		\label{tab:cutest_long}
+	\end{longtable}
+}
+
+\end{document}
