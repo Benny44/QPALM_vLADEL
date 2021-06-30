@@ -151,12 +151,23 @@ c_float vec_norm_inf(const c_float *a, size_t n) {
     max0 = max0 > max2 ? max0 : max2;
     max0 = max0 > max3 ? max0 : max3;
     j = block_size * block_len;
-    switch (remaining) {
-        case 3: max0 = max0 > c_absval(a[j+2]) ? max0 : c_absval(a[j+2]); __attribute__ ((fallthrough));
-        case 2: max0 = max0 > c_absval(a[j+1]) ? max0 : c_absval(a[j+1]); __attribute__ ((fallthrough));
-        case 1: max0 = max0 > c_absval(a[j+0]) ? max0 : c_absval(a[j]); __attribute__ ((fallthrough)); /*Taking contribution from the last terms
-                                    * that were not included in the block*/
-        case 0:;
+	/*Taking contribution from the last terms
+	* that were not included in the block*/
+	switch (remaining) {
+		case 3: 
+			max0 = max0 > c_absval(a[j + 2]) ? max0 : c_absval(a[j + 2]); 
+			max0 = max0 > c_absval(a[j + 1]) ? max0 : c_absval(a[j + 1]); 
+			max0 = max0 > c_absval(a[j]) ? max0 : c_absval(a[j]); 
+			break;
+		case 2: 
+			max0 = max0 > c_absval(a[j + 1]) ? max0 : c_absval(a[j + 1]); 
+			max0 = max0 > c_absval(a[j]) ? max0 : c_absval(a[j]); 
+			break;
+		case 1: 
+			max0 = max0 > c_absval(a[j]) ? max0 : c_absval(a[j]); 
+			break;
+		case 0: 
+			break;
     }
     return max0;
 
