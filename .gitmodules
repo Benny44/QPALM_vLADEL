@@ -12,5 +12,5 @@
 	branch = master
 [submodule "tests/include/Minunit"]
 	path = tests/include/Minunit
-	url = https://github.com/Benny44/Minunit.git
+	url = https://github.com/Benny44/Minunit
 	branch = master
