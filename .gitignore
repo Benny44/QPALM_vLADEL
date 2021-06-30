@@ -5,6 +5,8 @@ demo
 *.o
 *.a
 *.mexa64
+*.mexw64
+*.pdb
 vecnorm.m
 *.out
 prof_output*

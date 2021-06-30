@@ -469,7 +469,7 @@ static void qpalm_termination(QPALMWorkspace *work, solver_common* c, solver_com
     #endif
 }
 
-inline static void qpalm_terminate_on_status(QPALMWorkspace *work, solver_common *c, solver_common *c2, c_int iter, c_int iter_out, c_int status_val)
+static void qpalm_terminate_on_status(QPALMWorkspace *work, solver_common *c, solver_common *c2, c_int iter, c_int iter_out, c_int status_val)
 {
     update_status(work->info, status_val);
     qpalm_termination(work, c, c2, iter, iter_out);

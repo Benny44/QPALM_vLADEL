@@ -187,8 +187,9 @@ end
 obj = '' ;
 
 kk = 0 ;
-cflags = 'CFLAGS="\$CFLAGS -std=c99 -fPIC -DMATLAB -DDAMD -O3 -DPROFILING -DPRINTING -DCOMPILE_NONCONVEX"';
+cflags = 'CFLAGS="\$CFLAGS -std=c99 -fPIC -O3"';
 flags = [cflags ' ' flags];
+flags = ['-DDLONG -DPRINTING -DPROFILING -DDAMD -DMATLAB -DCOMPILE_NONCONVEX' ' ' flags];
 
 for f = source
     ff = f {1} ;
@@ -220,12 +221,12 @@ for f = source
     % fprintf ('%s\n', o) ;
     o = [o obj_extension] ;
     obj = [obj  ' ' o] ;					            
-    s = sprintf ('mex %s -DDLONG -O %s -c %s.c', flags, include, ff) ;
+    s = sprintf ('mex %s -O %s -c %s.c', flags, include, ff) ;
     s = [s obj ' ' lapack] ;
     kk = do_cmd (s, kk, details) ;
 end
 
-s = sprintf ('mex %s -DDLONG -O %s %s.c', flags, include, 'qpalm_mex') ;
+s = sprintf ('mex %s -O %s %s.c', flags, include, 'qpalm_mex') ;
 s = [s obj ' ' lapack] ;	
 kk = do_cmd (s, kk, details) ;
 

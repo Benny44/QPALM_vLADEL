@@ -45,12 +45,12 @@ void qpalm_set_factorization_method(QPALMWorkspace *work, solver_common *c)
     {
       Atnz_col = At->p[col+1] - At->p[col];
       if (Atnz_col + Atnz_col_max <= n)
-        nnz_schur += 0.5*Atnz_col*(Atnz_col-1);
+        nnz_schur += (Atnz_col*(Atnz_col-1))/2;
       else
-        nnz_schur += (n-Atnz_col_max)*(Atnz_col-(n-Atnz_col_max+1)/2.0);
+		  nnz_schur += (Atnz_col*(n - Atnz_col_max) - ((n - Atnz_col_max)*(n - Atnz_col_max + 1)) / 2);
     }
-    if (2*Atnz_col_max > n) nnz_schur += 0.5*Atnz_col_max*(Atnz_col_max-1) - (n-Atnz_col_max)*(Atnz_col_max-(n-Atnz_col_max+1)/2.0);
-    nnz_schur = c_max(c_min(nnz_schur, n*(n-1)/2), 1);
+	if (2 * Atnz_col_max > n) nnz_schur += (Atnz_col_max*(Atnz_col_max - 1)) / 2 - (Atnz_col_max*(n - Atnz_col_max) - ((n - Atnz_col_max)*(n - Atnz_col_max + 1)) / 2);
+    nnz_schur = c_max(c_min(nnz_schur, (n*(n-1))/2), 1);
     /* NB: If nnz(KKT) == nnz(Q+AtA) << n^2, then KKT will perform a bit better due to the 
     ordering. */;
     At = ladel_sparse_free(At);
@@ -170,7 +170,7 @@ void qpalm_form_kkt(QPALMWorkspace *work)
 void qpalm_reform_kkt(QPALMWorkspace *work)
 {
     solver_sparse *kkt = work->solver->kkt, *At = work->solver->At;
-    ladel_int col, index, n = work->data->n, m = work->data->m;
+    ladel_int col, n = work->data->n, m = work->data->m;
     ladel_int *first_row_A = work->solver->first_row_A;
     ladel_double *sigma_inv = work->sigma_inv, *first_elem_A = work->solver->first_elem_A;
 
