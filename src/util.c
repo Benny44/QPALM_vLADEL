@@ -11,6 +11,7 @@
 #include "global_opts.h"
 #include "string.h"
 #include "types.h"
+#include <stdio.h>
 /**********************
 * Utility Functions  *
 **********************/

@@ -477,6 +477,10 @@ inline static void qpalm_terminate_on_status(QPALMWorkspace *work, solver_common
 
 void qpalm_solve(QPALMWorkspace *work) 
 {
+	#if defined(PRINTING) && defined(_WIN32) && defined(_MSC_VER) && _MSC_VER < 1900
+	unsigned int print_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
+	#endif
+
     //Initialize ladel workspace, qpalm variables and perform scaling (timing added to setup)
     solver_common *c, *c2;
     qpalm_initialize(work, &c, &c2);

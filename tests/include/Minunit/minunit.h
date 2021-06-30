@@ -218,8 +218,8 @@ minunit_suite_teardown = NULL;\
 )
 
 #define mu_assert_long_eq(result, expected) MU__SAFE_BLOCK(\
-	long minunit_tmp_e;\
-	long minunit_tmp_r;\
+	long long minunit_tmp_e;\
+	long long minunit_tmp_r;\
 	minunit_assert++;\
 	minunit_tmp_e = (expected);\
 	minunit_tmp_r = (result);\
