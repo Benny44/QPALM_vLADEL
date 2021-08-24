@@ -34,7 +34,7 @@ Tosqp = [];
 Tqpoases = [];
 Tgurobi = [];
 T_NewtonKKTqp = [];
-T_ipopt = [];
+Tipopt = [];
 
 Iter_qpalm_matlab = [];
 Iter_qpalm_c = [];
@@ -137,10 +137,14 @@ for i = 1:ll
 
     if options.qpalm_matlab, Stats_qpalm_matlab{i} = stats.qpalm_matlab; end
     if options.NewtonKKTqp, Stats_NewtonKKTqp{i} = stats.NewtonKKTqp; end
+    
+    if options.qpalm_c, Y_qpalm_c{i} = options.y.qpalm_c; end
+    if options.ipopt, Y_ipopt{i} = options.y.ipopt; end
+    options.y = [];
  
 end
 
 n_values = 1:ll;
 
 clear matData;
-% save('../output/cutest');
+save('../output/cutest');

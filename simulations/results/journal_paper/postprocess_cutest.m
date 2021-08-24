@@ -7,22 +7,27 @@ i = [23, 37]; %A2NNDNIL and A5NNDNIL (PI and PI)
 Tqpalm_c(i) = [];
 Status_qpalm_c(i) = [];
 X_qpalm_c(i) = [];
+Y_qpalm_c(i) = [];
 
 Tqpalm_c_A = Tqpalm_c;
 Status_qpalm_c_A = Status_qpalm_c;
 X_qpalm_c_A = X_qpalm_c;
+Y_qpalm_c_A = Y_qpalm_c;
 
 load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/full_noA_final.mat')
 i = [25, 42, 60]; %LINCONT, NASH and STATIC3 (PI, PI and DI)
 Tqpalm_c(i) = [];
 Status_qpalm_c(i) = [];
 X_qpalm_c(i) = [];
+Y_qpalm_c(i) = [];
 
 Tqpalm = [Tqpalm_c_A, Tqpalm_c];
 Status_qpalm_c = [Status_qpalm_c_A, Status_qpalm_c];
 X_qpalm_c = [X_qpalm_c_A, X_qpalm_c];
+Y_qpalm_c = [Y_qpalm_c_A, Y_qpalm_c];
 
 X_qpalm_c_bar = X_qpalm_c;
+Y_qpalm_c_bar = Y_qpalm_c;
 Tqpalm_c_bar = Tqpalm;
 
 [gs_qpalm, fail_rate_qpalm, Tqpalm] = compute_geometric_mean(Tqpalm, Status_qpalm_c, 'solved', TIME_LIMIT);
@@ -32,11 +37,13 @@ i = [23, 37]; %A2NNDNIL and A5NNDNIL (PI and PI)
 Tipopt(i) = [];
 Status_ipopt(i) = [];
 X_ipopt(i) = [];
+Y_ipopt(i) = [];
 files(i) = [];
 
 Tipopt_A = Tipopt;
 Status_ipopt_A = Status_ipopt;
 X_ipopt_A = X_ipopt;
+Y_ipopt_A = Y_ipopt;
 files_A = files;
 
 load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/full_noA_final_ipopt.mat')
@@ -44,6 +51,7 @@ i = [25, 42, 60]; %LINCONT, NASH and STATIC3 (PI, PI and DI)
 Tipopt(i) = [];
 Status_ipopt(i) = [];
 X_ipopt(i) = [];
+Y_ipopt(i) = [];
 files(i) = [];
 
 Tipopt = [Tipopt_A, Tipopt];
@@ -128,7 +136,7 @@ for i = 1:length(Tqpalm_c)
     end
 end
 
-%Compare objectives for different solutions
+%Compare objectives for different solutions (don't count the failures to solve)
 nb_qpalm_wins = sum(Obj_qpalm < Obj_ipopt);
 nb_ipopt_wins = sum(Obj_qpalm > Obj_ipopt);
 
@@ -170,9 +178,53 @@ end
 
 [gs_qpalm, ~, ~] = compute_geometric_mean(Tqp, all_success, 'success', TIME_LIMIT);
 
+
+%Compare second-order necessary conditions violations
+nb_qpalm_dead = 0;
+nb_ipopt_dead = 0;
+
+for i = 1:length(Tqpalm_c)
+    xqp = X_qpalm_c{i};
+    xip = full(X_ipopt{i});
+    yqp = Y_qpalm_c{i};
+    yip = full(Y_ipopt{i});
+    load(files{i});
+    A = Data.A;
+    n = Data.n;
+    lb = Data.cl;
+    ub = Data.cu;
+
+    %Delete empty rows in A
+    b = A*rand(n,1);
+    I = find(abs(b) == 0);
+    A(I,:) = [];
+    lb(I,:) = [];
+    ub(I,:) = [];
+
+    A = [A; speye(Data.n)];
+
+%     A = [A; -A];
+    bu = [ub; Data.bu];
+    bl = [lb; Data.bl];
+    
+
+    if Tqpalm_c(i) ~= inf && check_dead_point(xqp, yqp, A, bu, bl, Data.Q, options.EPS_ABS)
+        nb_qpalm_dead = nb_qpalm_dead + 1;
+        fprintf('QPALM dead at i = %d\n', i);
+    end
+    
+    if Tipopt(i) ~= inf && check_dead_point(xip, yip, A, bu, bl, Data.Q, options.EPS_ABS)
+        nb_ipopt_dead = nb_ipopt_dead + 1;
+        fprintf('IPOPT dead at i = %d\n', i);
+    end   
+    
+end
+
+
 % gs_min = min([gs_ipopt, gs_qpalm]);
 % gs_qpalm = gs_qpalm/gs_min;
 % gs_ipopt = gs_ipopt/gs_min;
 fprintf('Runtime (sgm) & %.4f & %.4f\\\\\n', gs_qpalm, gs_ipopt);
 fprintf('Optimal & %4d & %4d\\\\\n', nb_qpalm_wins, nb_ipopt_wins);
+fprintf('Dead points & %4d & %4d \\\\\n', nb_qpalm_dead, nb_ipopt_dead);
 fprintf('Failure rate [\\%%] & %.4f & %.4f \n', fail_rate_qpalm, fail_rate_ipopt);

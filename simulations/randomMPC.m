@@ -9,15 +9,19 @@ options.qpalm_c = true;
 options.osqp = true;
 options.qpoases = true;
 options.gurobi = true;
+options.hpipm = true;
 options.VERBOSE = false;
-options.MAXITER = 10000;
+options.MAXITER = 10000000;
 options.TIME_LIMIT = 100;
+options.EPS_ABS = 1e-6;
+options.SCALING_ITER = 10;
 
 Tqpalm_matlab = [];
 Tqpalm_c = [];
 Tosqp = [];
 Tqpoases = [];
 Tgurobi = [];
+Thpipm = [];
 
 % nb_gamma = 21;
 % rng(1)
@@ -114,6 +118,7 @@ for i = 1:nb_n
     lb((T+1)*nx+T*(nx+nu)+1:end) = -inf;
            
     q = zeros(nx*(T+1)+nu*T,1);
+    Qorig = Q;
     Q = cell_blkdiag(blkdiag(Q, R), T, QT);
     
     Q = sparse(Q);
@@ -167,6 +172,14 @@ for i = 1:nb_n
     if options.qpoases, X_qpoases{i} = X.qpoases; end
     if options.gurobi, X_gurobi{i} = X.gurobi; end
     
+    if options.hpipm
+        [x_hpipm, t_hpipm, status_hpipm, iter_hpipm] = call_hpipm_ocp(T, nx, nu, nf, A, B, Qorig, R, QT, F, f, x_upper, -x_upper, u_upper, -u_upper, options.EPS_ABS, x_init, []);
+        Thpipm(i) = t_hpipm;
+        X_hpipm{i} = x_hpipm;
+        Status_hpipm{i} = status_hpipm;
+        Iter_hpipm(i) = iter_hpipm;
+    end
+    
 end
 
 if options.osqp, Tosqp(strcmp(Status_osqp, 'run time limit reached')) = options.TIME_LIMIT; end
@@ -175,5 +188,5 @@ save('output/MPC');
 
 %% Plot results
 
-plot_QP_comparison('output/MPC')
+plot_MPC_QP_comparison('output/MPC', false)
     

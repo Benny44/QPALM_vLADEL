@@ -39,10 +39,14 @@ end
 
 if ~isfield(options, 'EPS_ABS')
     EPS_ABS = 1e-6;
-    EPS_REL = EPS_ABS;
 else
     EPS_ABS = options.EPS_ABS;
+end
+
+if ~isfield(options, 'EPS_REL')
     EPS_REL = EPS_ABS;
+else
+    EPS_REL = options.EPS_REL;
 end
 
 if ~isfield(options, 'NONCONVEX')
@@ -122,7 +126,9 @@ if isfield(options, 'qpalm_matlab') && options.qpalm_matlab
         opts.Delta   = 100;
         opts.scaling = 'simple';
         opts.scaling_iter = SCALING_ITER;
-        opts.linsys = 10;
+        opts.linsys = 11;
+        opts.nonconvex = NONCONVEX;
+        opts.sigma_max = 1e9;
         tic;[x_qpalm,y_qpalm,stats_qpalm] = qpalm_matlab(prob.Q,prob.q,A,lbA,ubA,x_warm_start,y_warm_start,opts);
         qpalm_time = toc;
         t(k) = qpalm_time;
@@ -156,15 +162,15 @@ if isfield(options, 'qpalm_c') && options.qpalm_c
         settings = solver.default_settings();
         settings.verbose = VERBOSE;
         settings.print_iter = 1;
-        settings.scaling = 10;
+        settings.scaling = SCALING_ITER;
         settings.max_iter = MAXITER;
         settings.eps_abs_in = min(EPS_ABS*1e6, 1);
         settings.eps_rel_in = min(EPS_REL*1e6, 1);
         settings.rho = 0.1;
         settings.eps_abs = EPS_ABS;
         settings.eps_rel = EPS_REL;
-        settings.eps_prim_inf = EPS_ABS;
-        settings.eps_dual_inf = EPS_ABS;
+        settings.eps_prim_inf = min(EPS_ABS, 1e-7);
+        settings.eps_dual_inf = min(EPS_ABS, 1e-7);
         settings.time_limit = TIME_LIMIT;
         settings.proximal = true;
         settings.gamma_init = 1e7;
@@ -174,16 +180,17 @@ if isfield(options, 'qpalm_c') && options.qpalm_c
         settings.factorization_method = 2; %0: KKT, 1: SCHUR
         settings.nonconvex = NONCONVEX;
             
-        if ~update
-            solver.setup(prob.Q, prob.q, A,lbA,ubA, settings);
-        else
-%             solver.update_q(prob.q);
-            solver.update_bounds(lbA, ubA);
-        end
-        
         if (~isempty(x_warm_start) || ~isempty(y_warm_start))
             solver.warm_start(x_warm_start, y_warm_start);
         end
+        
+        if ~update
+            solver.setup(prob.Q, prob.q, A,lbA,ubA, settings);
+        else
+            solver.update_q(prob.q);
+            solver.update_bounds(lbA, ubA);
+        end
+        
         try
             res_qpalm = solver.solve();
             t(k) = res_qpalm.info.run_time;
@@ -201,7 +208,7 @@ if isfield(options, 'qpalm_c') && options.qpalm_c
             options.solvers_setup = true;
         end
         
-%         options.y = res_qpalm.y;
+        options.y.qpalm_c = res_qpalm.y;
             
     end
 
@@ -232,8 +239,8 @@ if isfield(options, 'osqp') && options.osqp
         osqp_settings.time_limit = TIME_LIMIT;
         osqp_settings.eps_abs = EPS_ABS;
         osqp_settings.eps_rel = EPS_REL;
-        osqp_settings.eps_prim_inf = EPS_ABS;
-        osqp_settings.eps_dual_inf = EPS_ABS;
+        osqp_settings.eps_prim_inf = min(EPS_ABS, 1e-6);
+        osqp_settings.eps_dual_inf = min(EPS_ABS, 1e-6);
         osqp_settings.verbose = VERBOSE;
         
         if ~update
@@ -241,6 +248,7 @@ if isfield(options, 'osqp') && options.osqp
         else
             new.l = lbA;
             new.u = ubA;
+            new.q = q;
             solver.update(new);
         end
         
@@ -483,15 +491,20 @@ if isfield(options, 'ipopt') && options.ipopt
     opt_ipopt.ipopt.max_cpu_time = TIME_LIMIT;
     opt_ipopt.ipopt.max_iter = 1000000000;
     opt_ipopt.ipopt.hessian_constant = 'yes';
+    opt_ipopt.record_time = true;
     opt_ipopt.print_time = false;
 
     S = nlpsol('S', 'ipopt', prob_struct, opt_ipopt);
     r = S('x0',x_warm_start,'lbx',lbx,'ubx',...
         ubx,'lbg',lbg,'ubg',ubg); %Solve  
-    timings.ipopt = S.stats.t_wall_S;
+%     timings.ipopt = S.stats.t_wall_S;
+    timings.ipopt = S.stats.t_wall_total;
     status.ipopt = S.stats.return_status;
-    x.ipopt = r.x;
+%     x.ipopt = r.x;
+    x.ipopt = full(r.x);
     iter.ipopt = S.stats.iter_count;
+    
+    options.y.ipopt = full([r.lam_g; r.lam_x]);
     
 %     results.ts_casadi(k) = S.stats.t_wall_S;
 %     results.ts_casadi(k) = toc(start);

@@ -2,6 +2,7 @@ clc
 
 
 load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/full_A_final.mat')
+TIME_LIMIT = options.TIME_LIMIT;
 % Iter_qpalm = Iter_qpalm_c;
 Tqpalm = Tqpalm_c;
 Status_qpalm = Status_qpalm_c;
@@ -41,7 +42,7 @@ for i = 1:nb_files
     else
         qpalm_time = Tqpalm(i);
         qpalm_obj = 0.5*X_qpalm{i}'*Data.Q*X_qpalm{i} + Data.q'*X_qpalm{i};
-        fprintf('%.3e & ', qpalm_time);
+        fprintf('%.2e & ', qpalm_time);
     end
     
     if (strcmp(Status_ipopt{i}, 'Solve_Succeeded'))
@@ -63,14 +64,14 @@ for i = 1:nb_files
     else
         ipopt_time = Tipopt(i);
         ipopt_obj = full(0.5*X_ipopt{i}'*Data.Q*X_ipopt{i} + Data.q'*X_ipopt{i});
-        fprintf('%.3e & ', ipopt_time);
+        fprintf('%.2e & ', ipopt_time);
     end
     
     if (strcmp(qpalm_status, 'S'))
         if (qpalm_obj >= 0)
             fprintf('\\phantom{-}');
         end
-        fprintf('%.3e & ', qpalm_obj);
+        fprintf('%.2e & ', qpalm_obj);
     else
         fprintf('%s & ', qpalm_obj);
     end
@@ -79,7 +80,7 @@ for i = 1:nb_files
         if (ipopt_obj >= 0)
             fprintf('\\phantom{-}');
         end
-        fprintf('%.3e', ipopt_obj);
+        fprintf('%.2e', ipopt_obj);
     else
         fprintf('%s', ipopt_obj);
     end
@@ -127,7 +128,7 @@ for i = 1:nb_files
     else
         qpalm_time = Tqpalm(i);
         qpalm_obj = 0.5*X_qpalm{i}'*Data.Q*X_qpalm{i} + Data.q'*X_qpalm{i};
-        fprintf('%.3e & ', qpalm_time);
+        fprintf('%.2e & ', qpalm_time);
     end
     
     if (strcmp(Status_ipopt{i}, 'Solve_Succeeded'))
@@ -149,14 +150,14 @@ for i = 1:nb_files
     else
         ipopt_time = Tipopt(i);
         ipopt_obj = full(0.5*X_ipopt{i}'*Data.Q*X_ipopt{i} + Data.q'*X_ipopt{i});
-        fprintf('%.3e & ', ipopt_time);
+        fprintf('%.2e & ', ipopt_time);
     end
     
     if (strcmp(qpalm_status, 'S'))
         if (qpalm_obj >= 0)
             fprintf('\\phantom{-}');
         end
-        fprintf('%.3e & ', qpalm_obj);
+        fprintf('%.2e & ', qpalm_obj);
     else
         fprintf('%s & ', qpalm_obj);
     end
@@ -165,7 +166,7 @@ for i = 1:nb_files
         if (ipopt_obj >= 0)
             fprintf('\\phantom{-}');
         end
-        fprintf('%.3e', ipopt_obj);
+        fprintf('%.2e', ipopt_obj);
     else
         fprintf('%s', ipopt_obj);
     end

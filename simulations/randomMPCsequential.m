@@ -9,15 +9,18 @@ options.qpalm_c = true;
 options.osqp = true;
 options.qpoases = true;
 options.gurobi = true;
+options.hpipm = true;
 options.VERBOSE = false;
-options.MAXITER = 10000;
+options.MAXITER = 10000000;
 options.TIME_LIMIT = 100;
+options.EPS_ABS = 1e-6;
 
 Tqpalm_matlab = [];
 Tqpalm_c = [];
 Tosqp = [];
 Tqpoases = [];
 Tgurobi = [];
+Thpipm = [];
 
 % nb_gamma = 21;
 % rng(1)
@@ -97,6 +100,7 @@ ub((T+1)*nx+T*(nx+nu)+1:end) = f;
 lb((T+1)*nx+T*(nx+nu)+1:end) = -inf;
 
 q = zeros(nx*(T+1)+nu*T,1);
+Qorig = Q;
 Q = cell_blkdiag(blkdiag(Q, R), T, QT);
 
 Q = sparse(Q);
@@ -115,6 +119,12 @@ options.x = x_warm;
 
 options.return_solvers = true;
 
+%We do not make use of special features of qpoases for this sequential
+%problem since the shifted solution seems to be better
+% qpoases = options.qpoases;
+% options.qpoases = false;
+qpoases = false; 
+
 for i = 1:T
        
     qpalm_matlab_time = 0;
@@ -122,6 +132,10 @@ for i = 1:T
     osqp_time = 0;
     qpoases_time = 0;
     gurobi_time = 0;
+    
+    if i == T
+        option.return_solvers = false;
+    end
     
     [X, timings, iter, status, options] = compare_QP_solvers(prob, options);
     if options.qpalm_matlab , qpalm_matlab_time = qpalm_matlab_time + timings.qpalm_matlab; end
@@ -154,6 +168,37 @@ for i = 1:T
     if options.qpoases, X_qpoases{i} = X.qpoases; end
     if options.gurobi, X_gurobi{i} = X.gurobi; end
     
+    if qpoases
+        qpoases_options = qpOASES_options('default', 'printLevel', 0, 'terminationTolerance', options.EPS_ABS, 'maxCpuTime', options.TIME_LIMIT, 'maxIter', 100000000);
+
+        if i == 1
+            [QP,x,fval,status_qpoases, iter_qpoases, ~, auxOutput] = qpOASES_sequence( 'i',prob.Q,prob.q,prob.A,[],[],prob.lb,prob.ub,qpoases_options );
+        else
+            [x,fval,status_qpoases, iter_qpoases, ~, auxOutput] = qpOASES_sequence( 'h',QP,prob.q,[],[],prob.lb,prob.ub,qpoases_options );
+        end
+        
+        Tqpoases(i) = auxOutput.cpuTime;
+        Iter_qpoases(i) = iter_qpoases;
+        Status_qpoases{i} = status_qpoases;
+        X_qpoases{i} = x;
+        
+        if i == T
+            qpOASES_sequence( 'c',QP );
+        end
+        
+    end
+    
+    if options.hpipm
+        [x_hpipm, t_hpipm, status_hpipm, iter_hpipm] = call_hpipm_ocp(T, nx, nu, nf, A, B, Qorig, R, QT, F, f, x_upper, -x_upper, u_upper, -u_upper, 1e-6, x_init, x_warm);
+        Thpipm(i) = t_hpipm;
+        X_hpipm{i} = x_hpipm;
+        Status_hpipm{i} = status_hpipm;
+        Iter_hpipm(i) = iter_hpipm;
+    end
+    
+    
+    
+    
     %% Apply the first input (of the qpalm solution), shift the vectors for the next OCP and fix the bounds
     if strcmp(status.qpalm_c, 'solved')
         
@@ -181,10 +226,12 @@ for i = 1:T
 end
 
 if options.osqp, Tosqp(strcmp(Status_osqp, 'run time limit reached')) = options.TIME_LIMIT; end
+if options.osqp, options.osqp_solver.delete(); end
+if options.qpalm_c, options.qpalm_solver.delete(); end
 
 save('output/MPC_sequential');
 
 %% Plot results
 
-plot_QP_comparison('output/MPC_sequential')
+plot_MPC_QP_comparison('output/MPC_sequential', true)
     
