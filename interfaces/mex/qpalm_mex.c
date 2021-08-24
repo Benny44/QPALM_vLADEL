@@ -490,7 +490,7 @@ void copyMxStructToSettings(const mxArray* mxPtr, QPALMSettings* settings){
   settings->eps_abs_in                = (c_float)mxGetScalar(mxGetField(mxPtr, 0, "eps_abs_in"));
   settings->eps_rel_in                = (c_float)mxGetScalar(mxGetField(mxPtr, 0, "eps_rel_in"));
   settings->rho                       = (c_float)mxGetScalar(mxGetField(mxPtr, 0, "rho"));
-  settings->eps_prim_inf              = (c_float)mxGetScalar(mxGetField(mxPtr, 0, "eps_dual_inf"));
+  settings->eps_prim_inf              = (c_float)mxGetScalar(mxGetField(mxPtr, 0, "eps_prim_inf"));
   settings->eps_dual_inf              = (c_float)mxGetScalar(mxGetField(mxPtr, 0, "eps_dual_inf"));
   settings->theta                     = (c_float)mxGetScalar(mxGetField(mxPtr, 0, "theta"));
   settings->delta                     = (c_float)mxGetScalar(mxGetField(mxPtr, 0, "delta"));
