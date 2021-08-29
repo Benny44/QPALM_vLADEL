@@ -24,18 +24,20 @@ Status_gurobi = results.S.gurobi;
 % load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/MM_QPALM_C.mat')
 [gs_qpalm, fail_rate_qpalm, Tqpalm_c] = compute_geometric_mean(Tqpalm_c, Status_qpalm_c, 'solved', TIME_LIMIT);
 
-
-fid = fopen('../results/journal_paper/table_MM/MM.tex', 'w');
+cd('../results/journal_paper/table_MM/');
+fid = fopen('MM.tex', 'w');
 fprintf(fid, 'Runtime (sgm) & %.4f & %.4f & %.4f\\\\\n', gs_qpalm, gs_osqp, gs_gurobi);
 fprintf(fid, 'Failure rate [\\%%] & %.4f & %.4f & %.4f\n', fail_rate_qpalm, fail_rate_osqp, fail_rate_gurobi);
 fcl = fclose(fid);
 
+
 if options.EPS_ABS == 1e-3, mytol = '1e3'; end
 if options.EPS_ABS == 1e-6, mytol = '1e6'; end
-mytexfile = strcat('../results/journal_paper/table_MM/table_MM_', mytol);
-mytexcmd = strcat('pdflatex ', mytexfile);
+mytexfile = strcat(' table_MM_', mytol);
+mytexcmd = strcat('pdflatex', mytexfile);
 cmd = system(mytexcmd);
-% diary OFF;
+
+cd(current_path);
 
 %% Performance profiles
 

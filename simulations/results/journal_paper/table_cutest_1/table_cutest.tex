@@ -1,0 +1,13 @@
+\documentclass{amsart}
+\begin{document}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{l|cc}
+ & QPALM & IPOPT \\ \hline
+\input{cutest_small.tex}
+\end{tabular}
+\caption{Statistics of QPALM and IPOPT applied to the nonconvex QPs of the Cutest test set. The runtime reported is the mean over the 11 problems which converged to the same stationary point, whereas \textit{optimal} denotes the number of times the solver found the stationary point with the lowest objective in problems where different stationary points were found. Dead points indicate points at which second-order necessary conditions are violated.}
+\end{table}
+
+\end{document}
