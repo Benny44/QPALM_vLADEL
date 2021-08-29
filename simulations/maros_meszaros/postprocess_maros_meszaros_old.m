@@ -1,44 +1,33 @@
-function [] = postprocess_maros_meszaros(results, options)
-
 close all
 
-current_path = fileparts(mfilename('fullpath'));
-cd(current_path);
+TIME_LIMIT = 3600;
 
-TIME_LIMIT = options.TIME_LIMIT;
-
-Tosqp = results.T.osqp;
-Tqpalm_c = results.T.qpalm_c;
-Tgurobi = results.T.gurobi;
-
-Status_osqp = results.S.osqp;
-Status_qpalm_c = results.S.qpalm_c;
-Status_gurobi = results.S.gurobi;
-
-% load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/MM_OSQP.mat')
+load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/MM_OSQP.mat')
 [gs_osqp, fail_rate_osqp, Tosqp] = compute_geometric_mean(Tosqp, Status_osqp, 'solved', TIME_LIMIT);
+Tosqp_hat = Tosqp;
 
-% load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/MM_GUROBI.mat')
+load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/MM_GUROBI.mat')
 [gs_gurobi, fail_rate_gurobi, Tgurobi] = compute_geometric_mean(Tgurobi, Status_gurobi, 'OPTIMAL', TIME_LIMIT);
+Tgurobi_hat = Tgurobi;
 
-% load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/MM_QPALM_C.mat')
+load('/home/ben/Documents/Projects/QPALM/simulations/results/journal_paper/MM_QPALM_C.mat')
 [gs_qpalm, fail_rate_qpalm, Tqpalm_c] = compute_geometric_mean(Tqpalm_c, Status_qpalm_c, 'solved', TIME_LIMIT);
 
+% gs_min = min([gs_gurobi, gs_qpalm, gs_osqp]);
+% gs_qpalm = gs_qpalm/gs_min;
+% gs_osqp = gs_osqp/gs_min;
+% gs_gurobi = gs_gurobi/gs_min;
 
-fid = fopen('../results/journal_paper/table_MM/MM.tex', 'w');
-fprintf(fid, 'Runtime (sgm) & %.4f & %.4f & %.4f\\\\\n', gs_qpalm, gs_osqp, gs_gurobi);
-fprintf(fid, 'Failure rate [\\%%] & %.4f & %.4f & %.4f\n', fail_rate_qpalm, fail_rate_osqp, fail_rate_gurobi);
-fcl = fclose(fid);
+% fprintf('gs_qpalm: %.4f, gs_osqp: %.4f, gs_gurobi: %.4f\n', gs_qpalm, gs_osqp, gs_gurobi);
+fprintf('Runtime (sgm) & %.4f & %.4f & %.4f\\\\\n', gs_qpalm, gs_osqp, gs_gurobi);
 
-if options.EPS_ABS == 1e-3, mytol = '1e3'; end
-if options.EPS_ABS == 1e-6, mytol = '1e6'; end
-mytexfile = strcat('../results/journal_paper/table_MM/table_MM_', mytol);
-mytexcmd = strcat('pdflatex ', mytexfile);
-cmd = system(mytexcmd);
-% diary OFF;
+% fprintf('fail_qpalm: %.4f, fail_osqp: %.4f, fail_gurobi: %.4f\n', fail_rate_qpalm, fail_rate_osqp, fail_rate_gurobi);
+fprintf('Failure rate [\\%%] & %.4f & %.4f & %.4f\n', fail_rate_qpalm, fail_rate_osqp, fail_rate_gurobi);
+
 
 %% Performance profiles
-
+Tgurobi = Tgurobi_hat;
+Tosqp = Tosqp_hat;
 Tosqp(Tosqp==TIME_LIMIT) = inf;
 Tqpalm_c(Tqpalm_c==TIME_LIMIT) = inf;
 Tgurobi(Tgurobi==TIME_LIMIT) = inf;
@@ -96,5 +85,3 @@ set(gca,'fontsize',14)
 xlabel('log_{10}(f)')
 ylabel('fraction of solver within f of best')
 legend('QPALM', 'OSQP','Location', 'SouthEast')
-
-end
