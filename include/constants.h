@@ -9,7 +9,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif // ifdef __cplusplus
+#endif 
 
 /**
  * @name Booleans
@@ -119,6 +119,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif 
 
 #endif // ifndef CONSTANTS_H

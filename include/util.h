@@ -10,7 +10,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif // ifdef __cplusplus
+#endif 
 
 #include "types.h"
 #include "constants.h"
@@ -169,6 +169,6 @@ c_float qpalm_toc(QPALMTimer *t);
 
 # ifdef __cplusplus
 }
-# endif // ifdef __cplusplus
+# endif 
 
-#endif // ifndef UTIL_H
+#endif /* ifndef UTIL_H */

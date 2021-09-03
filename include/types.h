@@ -10,7 +10,7 @@
 
 # ifdef __cplusplus
 extern "C" {
-# endif // ifdef __cplusplus
+# endif 
 
 #include "global_opts.h"
 
@@ -306,6 +306,6 @@ typedef struct {
 
 # ifdef __cplusplus
 }
-# endif // ifdef __cplusplus
+# endif 
 
 #endif // ifndef QPALM_TYPES_H

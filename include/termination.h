@@ -14,7 +14,7 @@
 
 # ifdef __cplusplus
 extern "C" {
-# endif // ifdef __cplusplus
+# endif 
 
 #include "types.h"
 
@@ -191,6 +191,6 @@ void store_solution(QPALMWorkspace *work);
 
 # ifdef __cplusplus
 }
-# endif // ifdef __cplusplus
+# endif 
 
 #endif // ifndef TERMINATION_H

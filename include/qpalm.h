@@ -11,6 +11,10 @@
 #ifndef QPALM_H
 #define QPALM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 #include "constants.h"
 #include "global_opts.h"
 #include "iteration.h"
@@ -155,5 +159,9 @@ void qpalm_cleanup(QPALMWorkspace *work);
 /**
  * @}
  */
+
+# ifdef __cplusplus
+}
+# endif 
 
 #endif /* QPALM_H */

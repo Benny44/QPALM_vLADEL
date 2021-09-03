@@ -13,7 +13,7 @@
 
 # ifdef __cplusplus
 extern "C" {
-# endif // ifdef __cplusplus
+# endif 
 
 // Functions to scale problem data
 # include "types.h"
@@ -52,6 +52,6 @@ void unscale_data(QPALMWorkspace *work);
 
 # ifdef __cplusplus
 }
-# endif // ifdef __cplusplus
+# endif 
 
 #endif // ifndef SCALING_H

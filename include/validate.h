@@ -10,7 +10,7 @@
 
 # ifdef __cplusplus
 extern "C" {
-# endif // ifdef __cplusplus
+# endif 
 
 # include "types.h"
 
@@ -45,6 +45,6 @@ c_int validate_settings(const QPALMSettings *settings);
 
 # ifdef __cplusplus
 }
-# endif // ifdef __cplusplus
+# endif 
 
 #endif // ifndef AUXIL_H

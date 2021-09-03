@@ -12,6 +12,10 @@
 #ifndef ITERATION_H
 #define ITERATION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 #include "types.h"
 #include "global_opts.h"
 
@@ -107,5 +111,9 @@ c_float compute_objective(QPALMWorkspace *work);
 c_float compute_dual_objective( QPALMWorkspace *work, 
                                 solver_common   *c);
 
+
+# ifdef __cplusplus
+}
+# endif 
 
 #endif

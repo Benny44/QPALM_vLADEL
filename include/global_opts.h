@@ -13,8 +13,7 @@
 
 # ifdef __cplusplus
 extern "C" {
-# endif /* ifdef __cplusplus */
-
+# endif 
 
 #include "ladel.h"
 typedef ladel_double  c_float; /**< type for floating point numbers */
@@ -159,6 +158,6 @@ static void* c_calloc(size_t num, size_t size) {
 
 # ifdef __cplusplus
 }
-# endif /* ifdef __cplusplus */
+# endif 
 
 #endif /* ifndef GLOBAL_OPTS_H */

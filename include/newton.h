@@ -12,7 +12,7 @@
 
 # ifdef __cplusplus
 extern "C" {
-# endif // ifdef __cplusplus
+# endif 
 
 #include "types.h"
 
@@ -44,6 +44,6 @@ void set_entering_leaving_constraints(QPALMWorkspace *work);
 
 # ifdef __cplusplus
 }
-# endif // ifdef __cplusplus
+# endif 
 
 #endif //ifndef NEWTON_H

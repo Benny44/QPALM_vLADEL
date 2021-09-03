@@ -9,6 +9,10 @@
 #ifndef LINESEARCH_H
 #define LINESEARCH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 #include "types.h"
 #include "constants.h"
 
@@ -69,5 +73,9 @@ c_float vec_prod_ind(const c_float *a,
  */
 int compare (const void * a, 
              const void * b);
+
+# ifdef __cplusplus
+}
+# endif 
 
 #endif

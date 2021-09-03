@@ -12,7 +12,7 @@
 
 # ifdef __cplusplus
 extern "C" {
-# endif // ifdef __cplusplus
+# endif 
 
 # include "types.h"
 #include "solver_interface.h"
@@ -265,6 +265,6 @@ void vec_ew_sqrt(const c_float *a,
 
 # ifdef __cplusplus
 }
-# endif // ifdef __cplusplus
+# endif 
 
 #endif // ifndef LIN_ALG_H

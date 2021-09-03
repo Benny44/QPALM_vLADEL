@@ -14,7 +14,7 @@
 
 # ifdef __cplusplus
 extern "C" {
-# endif // ifdef __cplusplus
+# endif 
 
 #include "global_opts.h"
 #include "constants.h"
@@ -197,6 +197,6 @@ void ldlsolveLD_neg_dphi(QPALMWorkspace *work,
 
 # ifdef __cplusplus
 }
-# endif // ifdef __cplusplus
+# endif 
 
 #endif // ifndef CHOLMOD_INTERFACE_H 
