@@ -1,5 +1,13 @@
 # Proximal Augmented Lagrangian method for Quadratic Programs
 
+| **QPALM is now maintained at [kul-optec/QPALM](https://github.com/kul-optec/QPALM)** |
+|:---:|
+
+---
+
+<details>
+<summary>View the original README</summary>
+
 [![Coverage Status](https://coveralls.io/repos/github/Benny44/QPALM_vLADEL/badge.svg?branch=master)](https://coveralls.io/github/Benny44/QPALM?branch=master)
 
 Platform | CI Status
@@ -122,3 +130,4 @@ QPALM is licensed under LGPL v3.0. Some modules are used in this software:
 * LAPACK: authored by The University of Tennessee and The University of Tennessee Research Foundation, The University of California Berkeley, and The University of Colorado Denver, and licensed under BSD-3, see [here](https://github.com/Reference-LAPACK/lapack/blob/master/LICENSE).
 * Minunit: a minimal unit testing framework for C, modified from the version by David Siñuela Pastor and licensed under MIT, see [here](https://github.com/siu/minunit/blob/master/MIT-LICENSE.txt).
 
+</details>
